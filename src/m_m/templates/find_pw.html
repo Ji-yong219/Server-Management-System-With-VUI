@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>내 계정</title>
+	<link rel="icon" href="{{url_for('static', filename='css/image/icon.png')}}">
+	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/find_account.css')}}">
+	<script type="text/javascript" src = "{{url_for('static',filename='js/find_account.js')}}"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script>
+		var name_chk = '{{name_chk}}';
+		var result_count = '{{result_count}}';
+		var user_name = '{{user_name}}';
+		var id_result= '{{id_result}}';
+	</script>
+</head>
+<body>
+	<div id='logo' onclick=window.open('/','_self')></div>
+	
+	<div id='content'>
+	<article>
+		<div id='input_name'>
+			<form action="/find_pw" method="POST" onsubmit='return check_name()'>
+				
+				<h2>아이디를 입력해 주세요.</h2>	
+				<input type="name" id="name" name="name" maxlength="50">
+				<div id="error"></div>
+				<br/>
+	
+				<input type="submit" id="submit" value="확인">
+			</form>
+		</div>
+
+		<div id='display_id'>
+			<form action="/find_pw" method="POST" onsubmit="return chk_pw()">
+				<h2>{{user_name}}의 비밀번호 재설정</h2><br/>
+				<input type="text" name="user_name" value="{{user_name}}" style=display:none>
+			
+				<h4>비밀번호</h4>	
+				<input type="password" id="pw" name="pw">
+				<br/>
+				<h4>비밀번호 확인</h4>
+				<input type="password" id="pwa" name="pwa">
+				<br/>
+			
+				<span id="error2"></span>
+				<input type="submit" value="변경">
+			</form>
+		</div>
+		<script>display_chk(name_chk);check_id(id_result);</script>
+	</article>
+	</div>
+
+	<div id='under_bar'>
+		<div id='logo_bot' onclick=window.open('/','_self')></div>
+		<span id="text_bot">copyright ⓒ Ji-Yong Park & Yoon su Lim All Right Reserved</span>
+	</div>
+</body>
+</html>

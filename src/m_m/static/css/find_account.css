@@ -1,0 +1,128 @@
+#header{
+  z-index:1;
+  background-color: #ade7f7;
+  font-family:"나눔바른펜";
+  text-align:center;
+  margin-top:-10px;
+  left:0;
+  right:0;
+  margin-left:auto;
+  margin-right:auto;
+  width:1000px;
+  height:100px;
+  position:fixed;
+  border-bottom:1px solid gray;
+  padding:20px;
+}
+a{
+  text-decoration: none;
+  color:black;
+}
+#content{
+	text-align:center;
+}
+article{
+	width:800px;
+ 	position:relative;
+  	margin-left:auto;
+	margin-right:auto;
+	text-align:center;
+  	padding:20px;
+}
+#account{
+	border-top:1px solid #888888;
+	border-collapse:collapse;
+	padding:5px;
+	margin-top:30px;
+	margin-bottom:50px;
+	margin-left:auto;
+	margin-right:auto;
+	width:700px;
+}
+td{
+	height:50px;
+	width:150px;
+	border-bottom:1px solid #888888;
+	font-size:16px;
+}
+.fir_col{
+	font-size:20px;
+	text-align:left;
+}
+#error{
+	color:red;
+	font-size:20px;
+}
+#error2{
+	color:red;
+	font_size:20px;
+}
+#under_bar{
+	text-align:center;
+	width:500px;
+	height:100px;
+	margin-left:auto;
+	margin-right:auto;
+	padding:10px;
+	top:20px;
+}
+#logo{
+	background-repeat:no-repeat;
+	background-image: url('./image/registlogo.png');
+	width:300px;
+	height:80px;
+
+	margin-left:auto;
+	margin-right:auto;
+	margin-top:30px;
+	margin-bottom:50px;
+	background-position:center;
+	cursor:Pointer;
+}
+#logo_bot{
+	margin-top:30px;
+	height:40px;
+	background-size:contain;
+	background-repeat:no-repeat;
+	background-image: url('./image/logo.png');
+	margin-left:auto;
+	margin-right:auto;
+	background-position:center;
+	cursor:Pointer;
+}
+input{
+	margin:auto;
+	display:block;
+	width:500px;
+	height:40px;
+	font-size:20px;
+}
+input[type=submit]{
+	margin:auto;
+	margin-top:40px;
+	height:80px;
+	background:#1a73e8;
+	color:white;
+	font-size:24px;
+	font-family:"맑은 고딕";
+	cursor:pointer;
+}
+input[type=text]{
+	width:160px;
+	height:30px;
+	font-size:16px;
+	text-align:center;
+	margin-top:10px;
+}
+input[type=password]{
+	width:360px;
+	height:40px;
+}
+#text_bot{
+	margin-top:5px;
+	display:block;
+	clear:both;
+	margin-left:auto;
+	margin-right:auto;
+	font-size:14px;
+}

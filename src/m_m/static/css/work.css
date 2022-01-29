@@ -1,0 +1,80 @@
+*{
+    box-sizing:border-box;
+}
+.server_table{
+    width: 100%;
+    margin:10px 0 0 15px;
+    background:white;
+    border-collapse:collapse;
+    text-align:center;
+}
+.server_table td{
+   height: 40px;
+}
+.server_table_title{
+    background:#071e67;
+    border-top:2px solid #071e67;
+    border-bottom:2px solid #071e67;
+    color: white;
+}
+.server_table_contain{
+    border-top:2px solid #071e67;
+    border-bottom:2px solid #071e67;
+}
+.server_table_contain button{
+    cursor: pointer;
+    background: white;
+    border: 1px solid #071e67;
+}
+#command_box{
+    display: block;
+    width:260px;
+    padding:5px;
+    border-radius:10px;
+    background:#f4f4f4;
+    margin: 20px;
+    border: solid 2px #071e67;
+    cursor: move;
+}
+.command_box_title{
+    display:block;
+    text-align:center;
+    font-weight:bold;
+}
+#etc_box{
+    width:190px;
+    /* border-radius:10px; */
+    /* border-bottom:solid #071e67 2px; */
+}
+.other_box{
+    width:190px;
+    margin-top:10px;
+    /* border-radius:10px; */
+    /* border-bottom:solid #071e67 2px; */
+}
+#command_box button{
+    display:inline-block;
+    width:100px;
+    height:40px;
+    margin:10px;
+    border-radius:10px;
+    font-size:12px;
+    font-weight:bold;
+    cursor:pointer;
+    background: white;
+    /* background:#071e67; */
+    border: solid 2px #071e67;
+    color: black;
+    cursor: pointer;
+    vertical-align: top;
+}
+#connection_button{
+    float:left;
+    width:100px;
+    height:30px;
+    margin-left:15px;
+    border-radius:5px;
+    font-size:12px;
+    font-weight:bold;
+    cursor:pointer;
+}

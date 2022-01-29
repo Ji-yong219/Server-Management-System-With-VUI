@@ -1,0 +1,128 @@
+*{
+    box-sizing:border-box;
+}
+body{
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+body::-webkit-scrollbar { 
+    display: none; 
+}
+.big_title{
+    display:inline-block;
+    margin-top:50px;
+    font-size:24px;
+    color:#071e67;
+    font-family:나눔바른고딕;
+}
+.small_title{
+    display:inline-block;
+    font-size:18px;
+    color:#071e67;
+    font-family:나눔바른고딕;
+}
+#modify{
+    display:inline-block;
+    margin-top:50px;
+    margin-left:10px;
+    font-size:16px;
+    color:#071e67;
+    font-family:나눔바른고딕;
+    cursor:pointer;
+}
+.detail_spec_table{
+    /* width:90%; */
+    margin:10px 0 0;
+    /* border-collapse:collapse; */
+    border-spacing:0 5px;
+    text-align:center;
+}
+.detail_spec_title{
+    padding-right:10px;
+    border-right:3px solid #071e67;
+    text-align:right;
+    width: 100px;
+    color:#071e67;
+    font-family:나눔고딕;
+}
+.detail_spec_contain{
+    padding-left:10px;
+    text-align:left;
+    /* width: 500px; */
+    color:#071e67;
+    font-family:나눔고딕;
+}
+
+#cpu_chart{
+    display:inline-block;
+    width:120px;
+    height:250px;
+    margin-top:10px;
+    margin-left:10px;
+}
+#ram_chart{
+    display:inline-block;
+    width:300px;
+    height:250px;
+    margin-top:10px;
+}
+#storage_chart{
+    display:inline-block;
+    width:300px;
+    height:250px;
+    margin-top:10px;
+}
+.canvasjs-chart-credit{
+    display:none;
+}
+
+.detail_tab_box{
+    position:relative;
+    width:90%;
+    height:auto;
+    margin-top:20px;
+}
+
+d_tab{
+    position: relative;
+    float: left;
+    z-index: 9;
+    padding:0 5px 0;
+    text-align: center;
+    color:#071e67;
+    font-size:14px;
+    font-family:나눔고딕;
+    cursor:pointer;
+}
+d_window{
+    display:block;
+    position:absolute;
+    width:100%;
+    height:auto;
+    margin:30px auto;
+}
+d_window.hidden{
+    display:none;
+}
+.detail_tab_table{
+    /* width:90%; */
+    /* margin:10px 0 0; */
+    border-spacing:0 5px;
+    text-align:center;
+}
+.tab_table_title{
+    font-weight:bold;
+}
+
+.inlines{
+    display: inline-block;
+    width: fit-content;
+    vertical-align: top;
+}
+.command_btn{
+    background: white;
+    color: #071e67;
+    border: 2px solid #071e67;
+    padding: 5px;
+    cursor: pointer;
+}

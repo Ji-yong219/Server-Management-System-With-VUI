@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--<meta http-equiv="refresh" content="0; url=/" >-->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>M & M</title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/main.css')}}">
+    <script src = "//code.jquery.com/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+    <script src="{{url_for('static', filename='js/annyang.js')}}"></script>
+    <script>
+        var user_id = '{{user_id}}';
+
+        // 웹 소켓
+        var web_socket = io.connect("https://"+ document.domain +":"+ location.port +"/socket");
+        
+        // 리눅스 서버 접속관리
+        var linux_connection = "{{linux_connection}}";
+        
+        // 웹 음성인식
+        annyang.start({ autoRestart: true, continuous: true })
+        
+        var recognition = annyang.getSpeechRecognizer();
+        var final_transcript = '';
+        var popup_listening = false;
+        recognition.interimResults = true;
+     
+        // 창 관리 딕셔너리
+        var window_list = {};
+        
+        // 마지막으로 명령한 창
+        var last_win = 1;
+        
+        $(document).ready(function(){
+            // 서버 목록 추가함수 실행
+            print_user_servers("{{user_servers}}");
+            // 음성 인식 완료 이벤트
+            recognition.onresult = function(event) {
+                //console.log("창 목록", window_list);
+                var interim_transcript = '';
+                
+                final_transcript = '';
+                
+                if (popup_listening){
+                    for (var i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            final_transcript += event.results[i][0].transcript;
+                            
+                            var close_sign = final_transcript.replace(/(\s*)/g, '');
+                            
+                            // 중단어
+                            if(close_sign == "스탑" || close_sign == "잠깐" || close_sign=="멈춰"
+                            || close_sign == "들어가" || close_sign == "종료" || close_sign == "스톱" ){
+                                close_voice_prompt();
+                                break;
+                            }
+                            
+                            $('#voice_result span').html(final_transcript);
+                            
+                            setTimeout(function(){
+                                web_socket.emit('voice_command', {id:'{{user_id}}', text:final_transcript});
+                                $('#voice_result span').html('듣고 있어요..');
+                            }, 1500);
+                        }
+                        else {
+                            interim_transcript += event.results[i][0].transcript;
+                            $('#voice_result span').html(interim_transcript);
+                        }
+                    }
+                    
+                }
+                else{
+                    for (var i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            final_transcript += event.results[i][0].transcript;
+                            
+                            // 헤이라고 부를 경우 팝업창 띄움
+                            var call_sign = final_transcript.replace(/(\s*)/g, '');
+                            
+                            if (call_sign == "헤이" || call_sign == "Hey"){
+                                $('#voice_img').css("display", "block");
+                                $('#voice_result span').html('듣고 있어요..');
+                                popup_listening = true;
+                            }
+                        }
+                    }
+                }
+            };
+        });
+    </script>
+    <script src="{{url_for('static', filename='js/main.js')}}"></script>
+    
+    <!-- {% block head %} -->
+    
+    <!-- {% endblock %} -->
+</head>
+
+
+
+<body>
+    <div id= "layer_popup"></div>
+    
+    <div id= "popup_window">
+        <span id="popup_close_button">X</span>
+        <span id="popup_title"></span><br>
+        <span id="popup_server_idx" style="display: none"></span>
+        
+        
+        <!-- 세부 정보 서버 편집 -->
+        <div id= "modify_server" style= "display:none">
+            <form id= "modify_server_form" action="/modify_server" method = "POST">
+                <table id="server_modify_top_table">
+                    <input id="modify_server_id" name="modify_server_id" style="display:none">
+                    <tr>
+                        <td><span>서버 이름</span></td>
+                        <td><input id="new_name" name="server_name" type="text"></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><span>서버 IP</span></td>
+                        <td><input id="new_ip" name="server_ip" type="text"></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><span>SSH 포트</span></td>
+                        <td><input id="new_port" name="server_port" type="text"></td>
+                    </tr>
+                    
+                </table>
+                
+                <input class="popup_submit_button" type="submit" value="완료">
+            </form>
+        </div>
+
+        <!-- 세부 정보 서버 선택 -->
+        <div id= "detail_window" style= "display:none">
+            <!-- <form id="detail_popup_form" action="/detail" method = "GET"> -->
+                <select id="server_select_box", name="select_server">
+                    <option value = "">서버 선택</option>
+                </select>
+                <input class="popup_submit_button" type="button" value="완료" onclick="
+                    var url = '/detail?select_server='+$('#server_select_box').val();
+                    $('#i_window').attr('src',  url);
+                    $('#layer_popup').hide();
+                    $('#popup_window').children().css('display', 'none');
+                    $('#popup_window').css('display', 'none');
+                    //create_window(url);">
+            <!-- </form> -->
+        </div>
+        
+        <!-- 서버 추가 -->
+        <div id= "insert_server" style= "display:none">
+            <form action="/insert_server" method = "POST">
+                <input class="insert_input_box" name="insert_name" type="text" placeholder="서버 이름">
+                <input class="insert_input_box" name="insert_ip" type="text" placeholder="서버 IP">
+                <input class="insert_input_box" name="insert_pw" type="text" placeholder="root 비밀번호">
+                <input class="insert_input_box" name="insert_port" type="text" placeholder="SSH 포트">
+                
+                <input id="insert_submit_button" type="submit" value="완료">
+            </form>
+            
+            <span class="error_msg"></span>
+        </div>
+        
+        <!-- Mysql 설치 -->
+        <div id= "mysql_install" style= "display:none">
+            <span>Mysql 기본 비밀번호는 <strong><i>Mymonitor123!</i></strong> 입니다.</span>
+            <input class="popup_submit_button" type="button"
+                onclick="$('#i_window')[0].contentWindow.send_work('mysql_install:5.7');
+                    $('#mysql_install_result_box').text('설치 중.. 0%');" value="MYSQL 5.7"/>
+            <input class="popup_submit_button" type="button"
+                onclick="$('#i_window')[0].contentWindow.send_work('mysql_install:8.0';
+                    $('#mysql_install_result_box').text('설치 중.. 0%');" value="MYSQL 8.0"/>
+                
+            <span id="mysql_install_result_box">
+                설치하실 버전을 클릭하세요.
+            </span><br>
+            
+            <span class="error_msg"></span>
+            
+            <script>
+                web_socket.on('mysql_install', function(data){
+                    var per = data.data;
+                    
+                    $("#mysql_install_result_box").text("설치 중.. "+per);
+                    
+                    if(per == "100%"){
+                        <!-- $("#mysql_install_result_box").text(""); -->
+                        $("#mysql_install_result_box").text("설치 완료");
+                    }
+                    else if(per == ""){
+                        $("#mysql_install_result_box").text("에러?");
+                    }
+                });
+            </script>
+        </div>
+        
+        <!-- Mysql 포트 변경 -->
+        <div id= "mysql_port_ch" style= "display:none">
+            <span>Mysql 기본 포트는 3306입니다.</span><br>
+            
+            <input id="mysql_port" type="text" placeholder="변경할 포트 입력" onkeyup="is_port($(this))">
+            
+            <span class="error_msg"></span>
+            <input class="popup_submit_button" type="button" value="변경"
+                onclick="
+                $('#i_window')[0].contentWindow.send_work( '/root/M_M/mysql_port_ch.sh '+ $('#mysql_port').val() );
+                $('#popup_close_button').trigger('click');"/>
+        </div>
+        
+        <!-- MYSQL 비밀번호 변경 -->
+        <div id= "mysql_pw_ch" style= "display:none">
+            <span>기본 비밀번호는 <strong><i>Mymonitor123!</i></strong> 입니다.</span><br>
+            
+            <input id="new_pw" type="password" placeholder="바꿀 비밀번호 입력">
+            <br>
+            <input id="new_pw2" type="password" placeholder="바꿀 비밀번호 확인"
+            onkeyup="is_pw_correct(document.getElementById('new_pw'), this)">
+            
+            <span class="error_msg"></span>
+            <input class="popup_submit_button" type="button" value="변경"
+                onclick="
+                    new_pw = $('#new_pw').val();
+                    result = check_pw_verify(new_pw);
+                    if (result == 'success'){
+                        send_work('ch_mysql_pw/:,:/' + new_pw, $('popup_server_idx').text(), true,);
+                        
+                        $('.error_msg').text('');
+                        location.reload();
+                    }
+                    else{
+                        $('.error_msg').text(result);
+                    }">
+        </div>
+        
+        <!-- MYSQL 비밀번호 정책 변경 -->
+        <div id= "mysql_policy_ch" style= "display:none">
+            <table class = "mysql_policy_table">
+                <tr>
+                    <td class= "mysql_policy_title">비밀번호에 아이디 사용 불가</td>
+                    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+                    <!-- <td class= "mysql_policy_contain"> -->
+                    <td>
+                        <input id="policy_chk_name" type="text" placeholder="ON 또는 OFF 입력"\
+                        onkeyup="is_on_off(this)">
+                    </td>
+                </tr>
+                <tr>
+                    <td class= "mysql_policy_title">비밀번호 최소 길이</td>
+                    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+                    <!-- <td class= "mysql_policy_contain"> -->
+                    <td>
+                        <input id="policy_length" type="text" placeholder="비밀번호 최소 길이 입력"\
+                        onkeyup="is_num(this)">
+                    </td>
+                </tr>
+                <tr>
+                    <td class= "mysql_policy_title">대소문자 포함 개수</td>
+                    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+                    <!-- <td class= "mysql_policy_contain"> -->
+                    <td>
+                        <input id="policy_mix" type="text" placeholder="대소문자 포함 개수 입력"\
+                        onkeyup="is_num(this)">
+                    </td>
+                </tr>
+                <tr>
+                    <td class= "mysql_policy_title">숫자 포함 개수</td>
+                    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+                    <!-- <td class= "mysql_policy_contain"> -->
+                    <td>
+                        <input id="policy_num" type="text" placeholder="숫자 포함 개수 입력"\
+                        onkeyup="is_num(this)">
+                    </td>
+                </tr>
+                <tr>
+                    <td class= "mysql_policy_title">정책 강도</td>
+                    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+                    <!-- <td class= "mysql_policy_contain"> -->
+                    <td>
+                        <input id="policy_type" type="text" placeholder="LOW, MEDIUM 중 입력"\
+                        onkeyup="is_low_medium_high(this)">
+                    </td>
+                </tr>
+                <tr>
+                    <td class= "mysql_policy_title">특수문자 포함 개수</td>
+                    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+                    <!-- <td class= "mysql_policy_contain"> -->
+                    <td>
+                        <input id="policy_special" type="text" placeholder="특수문자 포함 개수 입력"\
+                        onkeyup="is_num(this)">
+                    </td>
+                </tr>
+            </table>
+            
+            <br>
+            
+            <span class="error_msg"></span>
+            
+            <input class="popup_submit_button" type="button" value="변경"
+                onclick="
+                    chk = $('#policy_chk_name').val();
+                    leng = $('#policy_length').val();
+                    mix = $('#policy_mix').val();
+                    num = $('#policy_num').val();
+                    policy_type = $('#policy_type').val();
+                    special = $('#policy_special').val();
+                    
+                    string = chk+';'+leng+';'+mix+';'+num+';'+policy_type+';'+special;
+                    
+                    send_work('ch_mysql_policy/:,:/' + string, $('popup_server_idx').text(), true,);
+                    
+                    setTimeout(function(){
+                        location.reload();
+                    }, 2000);
+                ">
+        </div>
+                
+        <!-- 리눅스 보안점검 -->
+        <div id= "linux_check" style= "display:none">
+            <span></span><br>
+            
+            <span id="s_check_result_box">
+                보안 점검 버튼을 누르시면 점검을 시작합니다.
+            </span><br>
+            
+            <!-- <form action="/install_login" method = "POST"> -->
+                <input class="popup_submit_button" type="button" value="보안 점검"
+                    onclick="
+                        send_work('security_check', $('#popup_server_idx').text(), true);
+                        $('#s_check_result_box').text('점검 중..');
+                    "/>
+            <!-- </form> -->
+        </div>
+    </div>
+    
+    <div class = "header_box">
+        <!-- 음성 인식 팝업 -->
+        <div id= "voice_img" style= "background-image: URL({{url_for('static', filename='img/voice_feedback.gif')}});"></div>
+        <div id="voice_result" style='font-size: 16px;'><span>대기상태</span></div>
+        
+
+        <input class='voice_command' type='button' onclick="web_socket.emit('voice_command', {id:'{{user_id}}', text:$('#voice_command').val()});" style="border:solid 1px black;width:50px;height:30px;cursor:pointer;background:green;">
+        <input id='voice_command' class='voice_command'style="border:solid 1px black;width:500px;height:30px;">
+        
+        <style>.voice_command{display:inline-block;float:right;margin-top:30px;}</style>
+    
+        <div id = "profile_box">    
+            <span>{{user_id}}님 안녕하세요&nbsp;┃&nbsp;</span>
+            <span onclick = "go_logout()" style="cursor:pointer">LOGOUT</span>
+        </div>
+    </div>
+        
+    <article>
+        <div class = "menu_tab_box">
+            <table id = "menu_tab_table">
+            
+                <tr><td onclick = "$('#i_window').attr('src', '/monitoring')">
+                        <img class = "tab_icon" src="/static/img/monitoring.png">모니터링
+                </td></tr>
+                
+                <tr><td onclick = "$('#i_window').attr('src', '/work')">
+                    <img class = "tab_icon" src="/static/img/job.png">작업
+                </td></tr>
+                
+                <tr><td id = "detail_button">
+                    <img class = "tab_icon" src="/static/img/detail.png">세부정보
+                </td></tr>
+                
+            </table>
+        </div>
+        
+        <div class = "server_list_box">
+            <table id = "server_list_table">
+                <thead>
+                    <tr>
+                        <td id = "server_list_title">서버 목록
+                        <img id= "insert_server_button"
+                        src="/static/img/insert_server2.png">
+                        <img id= "refresh_server_button"
+                        src="/static/img/refresh_server.png"></td>
+                        
+                    </tr>
+                </thead>
+                <tbody id = "server_list_tbody"></tbody>
+            </table>
+        </div>
+        
+        <!-- 하위 페이지 -->
+        <iframe id="i_window" src="/monitoring" scrolling="auto" frameborder=0 onload="resizeIframe(this)">
+            iframe을 지원하지 않는 브라우저입니다. 다른 브라우저를 이용해 주세요.
+        </iframe>
+    
+    </article>
+</body>
+</html>

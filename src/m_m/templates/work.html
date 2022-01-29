@@ -1,0 +1,173 @@
+{%extends "template.html"%}
+{% block head %}
+  {{ super() }}
+	<!--<meta http-equiv="refresh" content="0; url=/" >-->
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/work.css')}}">
+    <script type = "text/javascript" src = "{{url_for('static',filename='js/monitoring.js')}}"></script>
+    <script src = "//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
+    <script>
+        var user_id = "{{user_id}}";
+        var user_servers = "{{user_servers}}";
+    </script>
+{% endblock %}
+{%block content%}
+    <br><br>
+    <table class = "server_table">
+        <thead>
+            <tr class = "server_table_title">
+                <td><input type = "checkbox" class = "check_all"></td>
+                <td>No.</td>
+                <td style="display:none"></td>
+                <td>Server Name</td>
+                <td>IP</td>
+                <td>보안 점검</td>
+                <td>MySQL PW</td>
+                <td>MySQL Policy</td>
+                <td>Update FIles</td>
+            </tr>
+        </thead>
+        <tbody id = "server_table_body">
+        </tbody>
+    </table>
+    
+    <div id = "command_box">
+        <text class= "command_box_title">전체 작업<br></text>
+        <!-- <div id = "etc_box"> -->
+            <!-- <text class= "command_box_title">Etc<br></text> -->
+            <button type= "button" id= "update_file" onclick= "send_work('update_file')">설치 파일<br>업데이트</button>
+        <!-- </div> -->
+        <!-- <div class = "other_box"> -->
+            <!-- <text class= "command_box_title">Mysql<br></text> -->
+            <button type= "button" 
+                onclick= "popup_on('mysql_install');$('#popup_title').text('Mysql 설치')">
+                Mysql<br>설치</button>
+            <button type= "button" onclick= "send_work('python /root/M_M/mysql_uninstall.py')">Mysql<br>삭제</button>
+            <button type= "button" 
+                onclick="popup_on('mysql_port_ch');$('#popup_title').text('Mysql 포트 변경')">
+                Mysql<br>포트 변경</button>
+            <button type= "button">추가 작업1</button>
+            <button type= "button">추가 작업2</button>
+            <button type= "button">추가 작업3</button>
+            <button type= "button">추가 작업4</button>
+        <!-- </div> -->
+        <!-- <div class = "other_box">
+            <text class= "command_box_title">Linux<br></text>
+        </div> -->
+    </div>
+    
+    <script>
+            function print_servers(){
+                $.ajax({
+                    type:"POST",
+                    url:"/get_info",
+                    datatype:"json",
+                    data:"give_me_server_list=" + user_id,
+                    success:function(data){
+                        data = data.data;
+                        
+                        for (i = 0 ; i < data.length ; i++){
+                            var tr = document.createElement("tr");
+                            tr.className = "server_table_contain";
+                            
+                            var tbody = document.getElementById("server_table_body");
+                            tbody.appendChild(tr);
+                            
+                            for (j = 0 ; j < 9 ; j++){ // 7
+                                var td = document.createElement("td");
+                                
+                                if(j == 0){
+                                    for(k=0 ; k < linux_connection.split(",").length ; k++){
+                                        if ( linux_connection.split(",")[k] == data[i][3]) {
+                                            td.innerHTML = '<input type = "checkbox" class="check_single">';
+                                            break;
+                                        }
+                                        else{
+                                            td.innerHTML = '<input type = "checkbox" class="check_single" disabled="true">';
+                                        }
+                                    }
+                                
+                                    td.className = 'td_index_zero';
+                                }
+                                else if(j == 1) // 넘버링
+                                    td.innerHTML = i + 1;
+                                
+                                else if(j == 2){// 인덱스
+                                    td.innerHTML = data[i][3];
+                                    td.className = "index";
+                                    td.style.display = 'none';
+                                } 
+                                
+                                else if(j == 3){// 서버 이름
+                                    td.innerHTML = data[i][0];
+                                    td.className = "server_name";
+                                    td.style.cursor = "pointer";
+                                } 
+                                
+                                else if(j == 4){ // IP
+                                    td.innerHTML = data[i][j-3];
+                                }
+                                else if(j == 5){
+                                    td.innerHTML = `\
+                                        <button type= 'button' onclick="\
+                                            popup_on('linux_check', '리눅스 보안 점검', '`+data[i][3]+`');">
+                                        보안 점검</button>`;
+                                }
+                                else if(j == 6){
+                                    td.innerHTML = `
+                                    <button type= "button" onclick="\
+                                            popup_on('mysql_pw_ch', 'MySQL 비밀번호 변경');\
+                                            $('#popup_title').text('MySQL 비밀번호 변경');">\
+                                        MySQL 비밀번호 변경</button>`;
+                                }
+                                else if(j == 7){
+                                    td.innerHTML = `
+                                    <button type= "button" onclick="
+                                            popup_on('mysql_policy_ch', 'MySQL 비밀번호 정책 변경', '`+data[i][3]+`');">
+                                        MySQL 비밀번호 정책 변경</button>`;
+                                }
+                                else if(j == 8){
+                                    td.innerHTML = `
+                                    <button type= "button" 
+                                        onclick="send_work('update_file', '`+data[i][3]+`', true)">
+                                        설치파일 업데이트</button>`;
+                                }
+                                
+                                tr.appendChild(td);
+                            }
+                        }
+                    }
+                })
+            }
+    
+            function send_work(work_name, idx=null, single=false){
+                    parent.send_work(work_name, idx, single);
+            };
+            
+            $(document).ready(function() {
+                $( '.check_all' ).click( function() {
+                    var chk = $(this).is(":checked");
+                    
+                    if(chk){
+                        $(".check_single").each(function() { // 체크박스 갯수만큼 for문을 돈다.
+                            var opt = $(this).prop("disabled");  // 현재 상태를 체크한다. 
+                            
+                            if(!opt)// prop을 통해 true, false 값을 return 받고, disabled이 아닌 박스틀만 체크한다.
+                                $(this).prop("checked", true);
+                                
+                        });
+                    }
+                    else
+                        $("#server_table_body input").prop("checked", false);
+                
+                });
+                
+                print_servers();
+            });
+            
+            $("#command_box").draggable();
+        </script>
+        
+{%endblock%}

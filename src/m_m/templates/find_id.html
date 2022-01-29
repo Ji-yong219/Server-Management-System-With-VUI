@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>내 계정</title>
+	<link rel="icon" href="{{url_for('static', filename='css/image/icon.png')}}">
+	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/find_account.css')}}">
+	<script type="text/javascript" src = "{{url_for('static',filename='js/find_account.js')}}"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script>
+		var name_chk = '{{name_chk}}';
+		var result_count = '{{result_count}}';
+		var user_name = '{{user_name}}';
+		var result_id= 'result_id';
+	</script>
+</head>
+<body>
+	<div id='logo' onclick=window.open('/','_self')></div>
+	
+	<div id='content'>
+	<article>
+		<div id='input_name'>
+			<form action="/find_id" method="POST" onsubmit='return check_name()'>
+				
+				<h2>이름을 입력해 주세요.</h2>	
+				<input type="name" id="name" name="name" maxlength="50">
+				<br/>
+	
+				<input type="submit" id="submit" value="확인">
+			</form>
+		</div>
+
+		<div id='display_id'>
+				<table  id="account">
+					<h3>{{user_name}}님의 아이디로  {{result_count}}건 조회되었습니다.</h3>
+					
+					{% for item in result_id %}
+					<tr>
+						<td class="fir_col"></td>
+						<td>{{item}}</td>
+						<td></td>
+					</tr>
+					{% endfor %}
+					
+				</table>
+				<input type="submit" onclick='window.open("/find_pw","_self")' value="비밀번호 찾기">
+		</div>
+		<script>display_chk(name_chk);</script>
+	</article>
+	</div>
+
+	<div id='under_bar'>
+		<div id='logo_bot' onclick=window.open('/','_self')></div>
+		<span id="text_bot">copyright ⓒ Ji-Yong Park & Yoon su Lim All Right Reserved</span>
+	</div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+*{
+    box-sizing:border-box;
+}
+
+.monitoring_table{
+    width:97%;
+    margin:10px 0 0 15px;
+    text-align:center;
+}
+.monitoring_table td{
+    height: 40px;
+}
+#monitoring_button{
+    display:inline-block;
+    width:100px;
+    height:30px;
+    margin-top: 10px;
+    margin-left:15px;
+    border-radius:5px;
+    font-size:12px;
+    font-weight:bold;
+    cursor:pointer;
+    color: white;
+    background: #071e67;
+}

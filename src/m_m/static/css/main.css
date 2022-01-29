@@ -1,0 +1,255 @@
+*{
+    box-sizing:border-box;
+}
+*:focus {
+    outline: none;
+}
+body{
+    margin:0;
+}
+article{
+    position:relative;
+    width:99vw;
+    height:93vh;
+}
+
+#profile_box{
+    position: absolute;
+    display:inline-block;
+    width: 300px;
+    top:10%;
+    right: 3%;
+    font-size:16px;
+    font-family:나눔바른고딕;
+    color: white;
+    text-align: right;
+}
+.header_box{
+    position:relative;
+    height: 80px;
+    padding:10px;
+    border: solid 1px black;
+    background: #0B0723;
+}
+
+.menu_tab_box{
+    position:relative;
+    float:left;
+    width:7%;
+    height:100%;
+    background:#071e67;
+    font-family:나눔고딕;
+}
+#menu_tab_table{
+    height:40%;
+    border-spacing:0 50px;
+    margin:0 auto;
+}
+#menu_tab_table td{
+    height:30px;
+    text-align:center;
+    font-size:15px;
+    color:white;
+    cursor:pointer;
+}
+.tab_icon{
+    display:block;
+    height:40px;
+    width:auto;
+    margin:0 auto 10px;
+}
+.server_list_box{
+    position:relative;
+    float:left;
+    width:14%;
+    height:100%;
+    margin-right:5px;
+    padding-left:5px;
+    border-right:1px solid #579ab9;
+    background:#f4f4f4;
+}
+#server_list_table{
+    width:100%;
+    margin:50px auto 0;
+    border-collapse:collapse;
+}
+#server_list_table td{
+    /* border:1px solid black; */
+    /* border:solid 1px black; */
+}
+#server_list_table td img{
+    position:relative;
+    height:15px;
+    /* border:solid 1px black; */
+}
+#server_list_title{
+    position:relative;
+    margin-bottom:10px;
+    padding-left:5px;
+    font-size:24px;
+    color:#071e67;
+    font-family:나눔바른고딕;
+    border:none;
+}
+#insert_server_button{
+    display:inline-block;
+    width:auto;
+    height:15px;
+    cursor:pointer;
+}
+#refresh_server_button{
+    display:inline-block;
+    width:auto;
+    height:15px;
+    cursor:pointer;
+}
+.server_lists{
+    display:inline-block;
+    padding:5px;
+    height:32px;
+    color:#071e67;
+    font-family:나눔고딕;
+    cursor:pointer;
+}
+.server_remove{
+    display:inline-block;
+    width:20px;
+    height:18px;
+    padding:0;
+    border-radius:5px;
+    background:none;
+    border:none;
+    color:#071e67;
+    font-family:나눔고딕;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+.server_id{
+    display:none;
+}
+
+
+
+
+#layer_popup{
+    position:absolute;
+    left:0;
+    top:0;
+    z-index:9000;
+    background:#000;
+    display:none;
+}
+#popup_window{
+    position:absolute;
+    width:500px;
+    left:50%;
+    transform:translateX(-50%);
+    top:100px;
+    z-index:10000;
+    text-align:center;
+    background:white;
+    display:none;
+}
+#popup_close_button{
+    float:right;
+    margin-right:10px;
+	font-weight: bold;
+	font-family: TmonMonsori, "맑은 고딕";
+	font-size: 24px;
+    cursor:pointer;
+}
+#popup_title{
+    position:relative;
+    display:inline-block;
+    width:400px;
+    margin:10px auto 20px;
+    text-align:center;
+	font-weight: bold;
+	font-family: TmonMonsori, "맑은 고딕";
+	font-size: 24px;
+}
+.error_msg{
+    display:block;
+    margin:10px auto 20px;
+	font-size: 12px;
+	font-weight: bold;
+    color:red;
+}
+.popup_submit_button{
+    width:120px;
+    height:30px;
+    margin:20px 20px;
+    border:0;
+    text-align:center;
+	font-weight: bold;
+	font-size: 14px;
+    color:white;
+    background:#071e67;
+    cursor:pointer;
+}
+#server_modify_top_table{
+    margin:0 auto;
+    text-align:left;
+}
+#server_modify_bottom_table{
+    margin:0 auto;
+    text-align:left;
+}
+.insert_input_box{
+    position: relative;
+	width: 280px;
+	height: 30px;
+    margin: 10px auto 0;
+    padding-left:5px;
+	border: 1px solid #d8d8d8;
+	font-family: TmonMonsori, "맑은 고딕";
+	font-size: 14px;
+}
+#insert_submit_button{
+	position: relative;
+    display:block;
+	width: 120px;
+ 	height: 40px;
+    margin: 20px auto 10px;
+	border: 1px solid #d8d8d8;
+	font-size: 14px;
+    background:#071e67;
+	font-weight: bold;
+	font-family: TmonMonsori, "맑은 고딕";
+	cursor:pointer;
+    color:white;
+}
+#server_select_box{
+    width:200px;
+    height:30px;
+}
+#s_check_result_box{
+    width:400px;
+    height:auto;
+    margin:0 auto;
+}
+
+
+
+
+
+#voice_result{
+    display: inline-block;
+    margin-left: 100px;
+    color: white; 
+}
+#voice_img{
+    position: absolute;
+    top:-20px;
+    width:100px;
+    height: 90px;
+    z-index:15000;
+    text-align:center;
+    background-size: contain ;
+    display:none;
+}
+#i_window{
+    width: 78%;
+    height: 1080px;
+}

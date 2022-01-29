@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!--<meta http-equiv="refresh" content="0; url=/" >-->
+	<meta charset="utf-8">
+	<title>M & M</title>
+	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/index.css')}}">
+	<script src="//code.jquery.com/jquery.min.js"></script>
+	<script type="text/javascript" src = "{{url_for('static',filename='js/index.js')}}"></script>
+</head>
+<body>
+    <div id= "layer_popup"></div>
+    <div id= "popup_window">
+        <span id="popup_close_button">X</span>
+        <span id="popup_title"></span><br>
+        
+        <!-- 회원가입 -->
+        <div id= "regist_window" style= "display:none">
+            <form action="/regist" method = "POST">
+                <table id="regist_table">
+                    <input id="modify_server_id" name="modify_server_id" style="display:none">
+                    <input id="is_id_ok" style="display:none" value="3">
+                    
+                    <tr>
+                        <td><span>아이디</span></td>
+                        <td><input id="user_id" type="text" placeholder="사용할 아이디 입력"></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><span>이름</span></td>
+                        <td><input id="user_name" type="text" placeholder="사용할 이름 입력"></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><span>비밀번호</span></td>
+                        <td><input id="user_pw" type="password" placeholder="비밀번호 입력"></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><span>비밀번호 확인</span></td>
+                        <td><input id="user_pwa" type="password" placeholder="비밀번호 재입력"
+                        onkeyup="is_pw_correct(document.getElementById('user_pw'), this)"></td>
+                    </tr>
+                    
+                </table>
+                <br>
+                <span class="error_msg"></span>
+                
+                <input class="popup_submit_button" type="button" value="완료" onclick = "check_regist_data()">
+            </form>
+        </div>
+        
+        
+        <!-- 서버 추가 -->
+        <div id= "insert_server" style= "display:none">
+            <form action="/insert_server" method = "POST">
+                <input class="insert_input_box" name="insert_name" type="text" placeholder="서버 이름">
+                <input class="insert_input_box" name="insert_ip" type="text" placeholder="서버 IP">
+                <input class="insert_input_box" name="insert_pw" type="text" placeholder="root 비밀번호">
+                <input class="insert_input_box" name="insert_port" type="text" placeholder="SSH 포트">
+                
+                <input id="insert_submit_button" type="submit" value="완료">
+            </form>
+            
+            <span class="error_msg"></span>
+        </div>
+        
+    </div>
+
+    <article>
+        <div class = "header_box">
+            <span id = "index_title" onclick = "window.location.replace('/')">
+                My Monitor
+            </span>
+        </div>
+        
+        <div class = "contain_box">
+            <span id = "contain_text" onclick = "print_session()">
+                Manage your server on the web.
+            </span>
+        </div>
+        
+        <div class = "login_box">
+            <div id = "login_form">
+                <form action="/login" method = "POST">
+                    <input class="inputbox" type="text" name="user_id" placeholder="아이디">
+                    <input id="pwbox" type="password" name="user_pw" placeholder="비밀번호">
+                    <input id="login_button" type="submit" value="로그인">
+                </form>
+            </div>
+            
+            <div id = "account_box">
+                <span class = "account_button" onclick = "regist_account()">
+                    회원 가입
+                </span>
+                
+                <span class = "account_button" onclick = "window.location.replace('/find_id')">
+                    계정 찾기
+                </span>
+            </div>
+        </div>
+    </article>
+
+</body>
+</html>

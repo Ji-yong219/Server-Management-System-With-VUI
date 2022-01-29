@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--<meta http-equiv="refresh" content="0; url=/" >-->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/template.css')}}">
+    <script src = "//code.jquery.com/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+    <script>
+        // 웹 소켓
+        var web_socket = io.connect("https://"+ document.domain +":"+ location.port +"/socket");
+        
+        // 리눅스 서버 접속관리
+        var linux_connection = "{{linux_connection}}";
+    </script>
+    {% block head %}
+    
+    {% endblock %}
+</head>
+
+<body>
+    <article>
+        <script>
+            // 팝업창 띄움 (iframe 부모팝업 함수 호출)
+            function popup_on(job, popup_title=null, idx=null){
+                parent.popup_on(job, popup_title, idx);
+            }
+        </script>
+        
+        {%block content%}
+        {%endblock%}
+    </article>
+</body>
+</html>

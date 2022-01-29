@@ -1,0 +1,487 @@
+{%extends "template.html"%}
+{% block head %}
+  {{ super() }}
+	<!--<meta http-equiv="refresh" content="0; url=/" >-->
+	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/detail.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
+	<script src = "//code.jquery.com/jquery.min.js"></script>
+    
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-3d.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvasjs/1.7.0/canvasjs.min.js"></script>
+    
+    <script>
+        var user_id = "{{user_id}}";
+        var user_servers = "{{user_servers}}";
+    </script>
+{% endblock %}
+    {%block content%}
+    <div style="margin-left:10px;">
+        <span class= "big_title"></span>
+        <input id = "server_id" style="display:none">
+        <span id = "modify">편집</span>
+        
+        <br><br>
+        <span class= "small_title">기본 정보</span>
+        
+        <table class = "detail_spec_table">
+            <tr>
+                <td class= "detail_spec_title">IP</td>
+                <td class= "detail_spec_contain" id = "ip"></td>
+                
+                <td class= "detail_spec_title">SSH 포트</td>
+                <td class= "detail_spec_contain" id = "port"></td>
+            </tr>
+            <tr>
+                <td class= "detail_spec_title">OS</td>
+                <td class= "detail_spec_contain" id = "os"></td>
+                
+                <td class= "detail_spec_title">커널</td>
+                <td class= "detail_spec_contain" id = "kernel"></td>
+            </tr>
+            <tr>
+                <td class= "detail_spec_title">아키텍처</td>
+                <td class= "detail_spec_contain" id = "arch"></td>
+                
+                <td class= "detail_spec_title">프로세서</td>
+                <td class= "detail_spec_contain" id = "processor"></td>
+            </tr>
+            <tr>
+                <td class= "detail_spec_title">RAM</td>
+                <td class= "detail_spec_contain" id = "ram"></td>
+                
+                <td class= "detail_spec_title">저장공간</td>
+                <td class= "detail_spec_contain" id = "storage"></td>
+            </tr>
+        </table>
+        
+        <br>
+        <div class="inlines">
+            <span class= "small_title">실시간 정보</span>
+            <br>
+            <div id="cpu_chart"></div>
+            <div id="ram_chart"></div>
+            <div id="storage_chart"></div>
+        </div>
+        
+        <!-- <br><br><br> -->
+        <div class="inlines">
+            <span class= "small_title">MYSQL 정보</span>
+            
+            <table class = "detail_spec_table">
+                <tr>
+                    <td class= "detail_spec_title">버전</td>
+                    <td class= "detail_spec_contain" id = "ms_ver"></td>
+                </tr>
+                <tr>
+                    <td class= "detail_spec_title">포트</td>
+                    <td class= "detail_spec_contain" id = "ms_port"></td>
+                </tr>
+                <tr>
+                    <td class= "detail_spec_title">비번 정책</td>
+                    <td class= "detail_spec_contain" id = "ms_pw_policy"></td>
+                </tr>
+            </table>  
+        </div>
+        
+        
+        <script>
+            $(document).ready(function(){
+                var detail_data = "{{data}}".split(",");
+                
+                // <!-- console.log("받은 데이터:", detail_data); -->
+                
+                // <!-- 플라스크에서 바로 받아온 기본 정보 출력 -->
+                $("#server_id").val(detail_data[0]);
+                $(".big_title").first().text( detail_data[1] );
+                
+                $("#ip").text(detail_data[2]);
+                $("#port").text(detail_data[3]);
+                $("#os").text(detail_data[4]);
+                $("#kernel").text(detail_data[5]);
+                $("#arch").text(detail_data[6]);
+                $("#processor").text(detail_data[7]);
+                $("#ram").text(detail_data[8]);
+                $("#storage").text(detail_data[9]);
+                
+                $("#ms_ver").text(detail_data[10]);
+                $("#ms_port").text(detail_data[11]);
+                $("#ms_pw_policy").html('\
+                    <table class = "mysql_policy_table">\
+                        <tr>\
+                            <td class= "mysql_policy_title">비밀번호에 아이디 사용 불가</td>\
+                            <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>\
+                            <td class= "mysql_policy_contain">'+detail_data[13]+'</td>\
+                        </tr>\
+                        <tr>\
+                            <td class= "mysql_policy_title">비밀번호 최소 길이</td>\
+                            <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>\
+                            <td class= "mysql_policy_contain">'+detail_data[14]+'</td>\
+                        </tr>\
+                        <tr>\
+                            <td class= "mysql_policy_title">대소문자 포함 개수</td>\
+                            <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>\
+                            <td class= "mysql_policy_contain">'+detail_data[15]+'</td>\
+                        </tr>\
+                        <tr>\
+                            <td class= "mysql_policy_title">숫자 포함 개수</td>\
+                            <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>\
+                            <td class= "mysql_policy_contain">'+detail_data[16]+'</td>\
+                        </tr>\
+                        <tr>\
+                            <td class= "mysql_policy_title">정책 강도</td>\
+                            <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>\
+                            <td class= "mysql_policy_contain">'+detail_data[17]+'</td>\
+                        </tr>\
+                        <tr>\
+                            <td class= "mysql_policy_title">특수문자 포함 개수</td>\
+                            <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>\
+                            <td class= "mysql_policy_contain">'+detail_data[18]+'</td>\
+                        </tr>\
+                    </table>\
+                ');
+                
+                if(detail_data[11] == "-1") $("#ms_port").text("unknown");
+                
+                
+                // <!-- cpu 대시보드 변수 선언 -->
+                var cpu_chart = new CanvasJS.Chart("cpu_chart", {
+                    theme: "theme2",
+                    backgroundColor:"#fff",
+                    animationEnabled: true,
+                    title: {
+                        text: "CPU",
+                        fontSize: 24
+                    },
+                    axisX: {
+                        labelFontSize: 16
+                    },
+                    axisY: {
+                        suffix: "%",
+                        minimum: 0,
+                        maximum: 100,
+                        labelFontSize: 16
+                    },
+                    dataPointMinWidth:80,
+                    dataPointMaxWidth:80,
+                    data: [{
+                        type: "column",
+                        yValueFormatString: "#,##'%'",
+                        indexLabel: "{y}",
+                        indexLabelFontSize: 24,
+                        indexLabelFontFamily: "Calibri",
+                        indexLabelFontColor: "black",   
+                        dataPoints: [
+                            { label: "Usage", y: 0}
+                        ]
+                    }]
+                });
+                
+                // <!-- ram 대시보드 변수 선언 -->
+                var ram_chart = new CanvasJS.Chart("ram_chart", {
+                    theme: "theme2",
+                    backgroundColor:"#fff",
+                    animationEnabled: true,
+                    title: {
+                        text: "RAM",
+                        fontSize: 24
+                    },
+                    subtitles: [{
+                        text: "0%",
+                        verticalAlign: "center",
+                        fontSize: 24,
+                        dockInsidePlotArea: true
+                    }],
+                    data: [
+                        {
+                            type: "doughnut",
+                            indexLabelFontFamily: "Garamond",
+                            indexLabelFontSize: 16,
+                            startAngle:270,
+                            indexLabelFontColor: "dimgrey",       
+                            indexLabelLineColor: "darkgrey",
+                            toolTipContent: "{y}GB",        
+                            dataPoints: [
+                                { y: 10, indexLabel: "Usage" },
+                                { y: 10, indexLabel: "Free" }
+                            ]
+                        }
+                    ]
+                });
+            
+                // <!-- 저장공간 대시보드 변수 선언 -->
+                var storage_chart = new CanvasJS.Chart("storage_chart", {
+                    theme: "theme2",
+                    backgroundColor:"#fff",
+                    animationEnabled: true,
+                    title: {
+                        text: "STORAGE",
+                        fontSize: 24
+                    },
+                    subtitles: [{
+                        text: "0%",
+                        verticalAlign: "center",
+                        fontSize: 24,
+                        dockInsidePlotArea: true
+                    }],
+                    data: [
+                        {
+                            type: "doughnut",
+                            indexLabelFontFamily: "Garamond",       
+                            indexLabelFontSize: 16,
+                            startAngle:270,
+                            indexLabelFontColor: "dimgrey",       
+                            indexLabelLineColor: "darkgrey",
+                            toolTipContent: "{y}GB",        
+                            dataPoints: [
+                                { y: 10, indexLabel: "Usage" },
+                                { y: 10, indexLabel: "Free" }
+                            ]
+                        }
+                    ]
+                });
+            
+                
+                cpu_chart.render();
+                ram_chart.render();
+                storage_chart.render();
+                
+                // <!-- 실시간 자원 요청 보내서 -->
+                var real_status = setInterval(function(){
+                    web_socket.emit('get_usage', {user_id:'{{user_id}}', server_idx:$("#server_id").val()});
+                }, 1000);
+                
+                // <!-- 실시간 자원 응답 받음 -->
+                web_socket.on('return_usage', function(data){
+                    data = data.data;
+                
+                    cpu = Number(data.split(",")[0]);
+                    
+                    if(cpu == 0){
+                        cpu = 1;
+                    }
+                    
+                    ram = data.split(",")[1].split(":");
+                    sto = data.split(",")[2].split(":");
+                    
+                    
+                    cpu_chart.options.data[0].dataPoints[0].y = cpu;
+                    
+                    ram_chart.options.subtitles[0].text = ram[2] + "%";
+                    ram_chart.options.data[0].dataPoints[0].y = ram[0];
+                    ram_chart.options.data[0].dataPoints[1].y = ram[1] - ram[0];
+                    
+                    storage_chart.options.subtitles[0].text = sto[2] + "%";
+                    storage_chart.options.data[0].dataPoints[0].y = sto[0];
+                    storage_chart.options.data[0].dataPoints[1].y = sto[1] - sto[0];
+                    
+                    cpu_chart.render();
+                    ram_chart.render();
+                    storage_chart.render();
+                });
+                
+                // 세부 정보 편집
+                $("#modify").click(function(){
+                    clearInterval(real_status); // 실시간 자원 요청 중지
+                    
+                    popup_on('modify_server');
+                    $('#popup_title', parent.document).text('서버 정보 편집');
+                    $('#modify_server_id', parent.document).val($("#server_id").val());
+                    $('#new_name', parent.document).val( $(".big_title").first().text() );
+                    $('#new_ip', parent.document).val($("#ip").text());
+                    $('#new_port', parent.document).val($("#port").text());
+                });
+            });
+        </script>
+        
+        <br>
+
+        <br><br>
+        <span class= "small_title">리눅스 정보</span>
+        
+        <div class= "detail_tab_box">
+            <d_window>
+                탭 메뉴를 선택해주세요.
+            </d_window>
+            
+            <d_tab style="
+                border-bottom:3px solid #071e67;
+                font-family:나눔바른고딕;
+                font-size:16px;
+                ">홈</d_tab>
+            
+            <d_tab>로그인 성공기록</d_tab>
+            
+            <d_tab>유저목록</d_tab>
+            
+            <d_tab>로그인 실패기록</d_tab>
+            
+            <d_tab>IP차단목록</d_tab>
+            
+            <d_tab>MySQL 백업리스트</d_tab>
+        </div>
+        
+    </div>
+        <script>
+            var $menu_element = $('d_tab'); // 탭메뉴를 변수에 지정
+            $menu_element.click(function() { // 탭메뉴 클릭 이벤트
+                $('d_tab').css('border-bottom', 'none');
+                $('d_tab').css('font-family', '나눔고딕');
+                $('d_tab').css('font-size', '14px');
+                //$('d_window').addClass('hidden');
+                
+                $(this).css('border-bottom','3px solid #071e67');
+                $(this).css('font-family', '나눔바른고딕');
+                $(this).css('font-size', '16px');
+                //$(this).next().removeClass('hidden');
+                
+                if($(this).html() == "홈")
+                    $('d_window').html('탭 메뉴를 선택해주세요.');
+                
+                else if($(this).html() == "MySQL 백업리스트")
+                    send_work('linux_info:mysql_backup_list.sh');
+                    
+                else if($(this).html() == "IP차단목록")
+                    send_work('linux_info:ip_ban_list.sh');
+                    
+                else if($(this).html() == "로그인 실패기록")
+                    send_work('linux_info:lastb.sh');
+                    
+                else if($(this).html() == "유저목록")
+                    send_work('linux_info:user_list.sh');
+                    
+                else if($(this).html() == "로그인 성공기록")
+                    send_work('linux_info:last.sh');
+                
+            })
+            
+            web_socket.on('linux_info', function(data){
+                name = data.data.split(";")[0];
+                var tab_data = data.data.split(";")[1];
+                
+                if(name == "ip_ban_list.sh" || name=="user_list.sh"){       
+                    if (tab_data == "1"){
+                        $('d_window').html('기록이 없습니다.');
+                    }
+                    else{
+                        var table_head = "<table class='table table-striped'><tr><td>";
+                        var table_tail = "</td></tr></table>";
+                        tab_data = table_head + tab_data.replace(/,/g, "</td></tr><tr><td>") + table_tail;
+                        $('d_window').html(tab_data);
+                    }
+                }
+                else if(name == "last.sh" || name=="lastb.sh"){                       
+                    //tab_data = tab_data.replace(/,/g, "<br>");
+                    if (tab_data == "1"){
+                        $('d_window').html('기록이 없습니다.');
+                    }
+                    else{
+                        tab_data = tab_data.split("!").slice(0, tab_data.length-1);
+            
+                        $('d_window').html('\
+                            <table class="detail_tab_table table table-striped">\
+                                <thead>\
+                                    <tr class = "tab_table_title">\
+                                        <td>User</td>\
+                                        <td>Terminal</td>\
+                                        <td>IP</td>\
+                                        <td>Date</td>\
+                                    </tr>\
+                                </thead>\
+                                <tbody id = "tab_table_body">\
+                                </tbody>\
+                            </table>');
+                        
+                        for( i=0 ; i < tab_data.length-1 ; i++ ){
+                            var row = tab_data[i].replace("\r", "").split(",");
+                            
+                            var tr = document.createElement("tr");
+                            tr.className = "tab_table_contain";
+                            
+                            var tbody = document.getElementById("tab_table_body");
+                            tbody.appendChild(tr);
+                            
+                            for (j = 0 ; j < 4 ; j++){
+                                var td = document.createElement("td");
+                                
+                                if(j==3){
+                                    td.style.width = "400px";
+                                    td.innerHTML = [row[3], row[4], row[5], row[6], row[7], row[8], row[9]].join(' ');
+                                }
+                                else{
+                                    td.style.width = "100px";
+                                    td.innerHTML = row[j];
+                                }
+                                
+                                tr.appendChild(td);
+                            }
+                        }
+                    }
+                }
+                else if(name == "mysql_backup_list.sh"){
+                    if (tab_data == "no"){
+                        $('d_window').html('\
+                            <button type= "button" \
+                                onclick="send_work(\'mysql_backup.sh\');\
+                                send_work(\'linux_info:mysql_backup_list.sh\');">\
+                                MySQL 백업하기</button>\
+                                <span>백업된 파일이 없습니다.</span>');
+                    }
+                    else{
+                        tab_data = tab_data.split(",").slice(0, tab_data.length-1);
+            
+                        $('d_window').html('\
+                            <button type= "button" class="command_btn"\
+                                onclick="send_work(\'mysql_backup.sh\');\
+                                send_work(\'linux_info:mysql_backup_list.sh\');">\
+                                MySQL 백업하기</button>\
+                            <table class="detail_tab_table table table-striped">\
+                                <thead>\
+                                    <tr class = "tab_table_title">\
+                                        <td>파일 명</td>\
+                                        <td>롤백</td>\
+                                    </tr>\
+                                </thead>\
+                                <tbody id = "tab_table_body">\
+                                </tbody>\
+                            </table>');
+                        
+                        for( i=0 ; i < tab_data.length-1 ; i++ ){
+                            var row = tab_data[i].replace("\r", "").split(",");
+                            
+                            var tr = document.createElement("tr");
+                            tr.className = "tab_table_contain";
+                            
+                            var tbody = document.getElementById("tab_table_body");
+                            tbody.appendChild(tr);
+                            
+                            var td = document.createElement("td");
+                            var td2 = document.createElement("td");
+                            
+                            td.style.width = "160px";
+                            td2.style.width = "160px";
+                            
+                            td.innerHTML = row;
+                            td2.innerHTML = '\
+                                <button type= "button" class="command_btn"\
+                                    onclick="send_work(\'mysql_rollback.sh:'+row+'\');">\
+                                    해당 파일로 롤백하기</button>\
+                            ';
+                            
+                            tr.appendChild(td);
+                            tr.appendChild(td2);
+                        }
+                    }
+                }
+            });
+            
+            
+            
+            function send_work(work_name){
+                web_socket.emit("send_command", {user_id:'{{user_id}}', server_list:$("#server_id").val(), command:work_name});
+            }
+        </script>
+        
+    {%endblock%}

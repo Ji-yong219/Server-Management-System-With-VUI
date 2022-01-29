@@ -1,0 +1,121 @@
+{%extends "template.html"%}
+{% block head %}
+  {{ super() }}
+	<!--<meta http-equiv="refresh" content="0; url=/" >-->
+	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/monitoring.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
+	<script type = "text/javascript" src = "{{url_for('static',filename='js/monitoring.js')}}"></script>
+	<script src = "//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
+    <script>
+        var user_id = "{{user_id}}";
+        var user_servers = "{{user_servers}}";
+        var linux_connection = "{{linux_connection}}";
+    </script>
+{% endblock %}
+{%block content%}
+    <button type= "button" id= "monitoring_button"  onclick = "click_monitoring()">모니터링 시작</button>
+
+    <table class = "monitoring_table table table-striped">
+        <thead>
+            <tr class = "monitoring_table_title">
+                <th>No.</th>
+                <th style="display:none"></th>
+                <th>Server Name</th>
+                <th>IP</th>
+                <th>SSH Port</th>
+                <th>Kernel</th>
+                <th>CPU</th>
+                <th>Memory</th>
+                <th>Space</th>
+            </tr>
+        </thead>
+        <tbody id = "monitoring_table_body">
+        </tbody>
+    </table>
+    
+    <script>
+                <!-- 모니터링 데이터 받았을 때 -->
+                web_socket.on('monitoring_list', function(data){
+                    var td = $("#monitoring_table_body .monitoring_table_contain");
+                    
+                    $(".server_element").each(function (i) {
+                        var id = $(td[i]).children()[1].innerHTML;
+                        
+                        for (j=0 ; j<data.data.length ; j++){
+                            if( $(td[i]).children()[1].innerHTML == data.data[j][0] ){
+                                for (k = 1 ; k < 5 ; k++){
+                                    if(k==2 || k==4){
+                                        $(td[i]).children()[k+4].innerHTML = data.data[j][1][k-1]+"%";
+                                    }
+                                    else
+                                        $(td[i]).children()[k+4].innerHTML = data.data[j][1][k-1];
+
+                                }                                    
+                                break;
+                            }
+                        }
+                    });
+                    
+                });
+                    
+                function send_get_monitoring(){
+                    web_socket.emit("get_monitoring_data", {user_id:"{{user_id}}"});
+                }
+                
+                function print_monitoring_servers(){
+                    $.ajax({ //로그아웃 전송 ajax
+                        type:"POST",
+                        url:"/get_info",
+                        datatype:"json",
+                        data:"give_me_server_list=" + user_id,
+                        success:function(data){
+                            data = data.data;
+                            
+                            for (i = 0 ; i < data.length ; i++){
+                                var tr = document.createElement("tr");
+                                tr.className = "monitoring_table_contain";
+                                
+                                var tbody = document.getElementById("monitoring_table_body");
+                                tbody.appendChild(tr);
+                                
+                                for (j = 0 ; j < 9 ; j++){
+                                    var td = document.createElement("td");
+                                    
+                                    if(j == 0){
+                                        td.className = "server_element";
+                                        td.innerHTML = i + 1;
+                                        td.style.fontWeight = "bold";
+                                    }
+                                    else if(j == 1){
+                                        td.innerHTML = data[i][3];
+                                        td.style.display = "none";
+                                    }
+                                    else if(j == 2){
+                                        td.innerHTML = data[i][0];
+                                        td.className = "server_name";
+                                        td.style.cursor = "pointer";
+                                    }
+                                    
+                                    else if(j > 2 && j < 5){
+                                        td.innerHTML = data[i][j-2];
+                                    }
+                                    
+                                    else if(j == 5){
+                                        $(td).css("font-size", "7px");
+                                        $(td).css("text-align", "left");
+                                    }
+                                    
+                                    tr.appendChild(td);
+                                }
+                            }
+                        }
+                    })
+                }
+                    
+                    
+                $(document).ready(function(){
+                    print_monitoring_servers();
+                });
+            </script>
+{%endblock%}

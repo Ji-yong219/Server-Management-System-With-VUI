@@ -608,8 +608,8 @@ function is_num(target){
 
 // 비밀번호 정책에 맞는지 검사
 function check_pw_verify(new_passwd){
-    <!-- var new_passwd = $("#new_pw").val(); -->
-    <!-- var policy_values = $('.pw_policy_output').text().split("\n"); -->
+    // <!-- var new_passwd = $("#new_pw").val(); -->
+    // <!-- var policy_values = $('.pw_policy_output').text().split("\n"); -->
     var policy_values = [0, 0, 0, 0, 0, 0];
     
     for( i = 0 ; i < $('.mysql_policy_contain').length ; i++ ){
@@ -627,9 +627,9 @@ function check_pw_verify(new_passwd){
     var count1 = 0;
     var count2 = 0;
     
-    <!-- for( i = 0 ; i < policy_values.length ; i++ ){ -->
-        <!-- policy_values[i] = policy_values[i].split(" ")[1]; -->
-    <!-- } -->
+    // <!-- for( i = 0 ; i < policy_values.length ; i++ ){ -->
+    //     <!-- policy_values[i] = policy_values[i].split(" ")[1]; -->
+    // <!-- } -->
     
     
     if(policy_values[4] == "LOW"){
@@ -694,7 +694,7 @@ function check_pw_verify(new_passwd){
     if (count1 < policy_values[3]){
         return "숫자가 포함되어 있지 않습니다.";
     }
-    <!-- $(".error_msg").text(""); -->
+    // <!-- $(".error_msg").text(""); -->
     return "success";
 }
 

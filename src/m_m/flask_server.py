@@ -9,10 +9,13 @@
 
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import pymysql
-import requests
-import os, csv, time, re, sys
+# import requests
+# import os, csv, time, re, sys
+import os
+import time
+import sys
 import subprocess
-import json
+# import json
 import logging
 from socket import *
 from datetime import datetime as dt
@@ -118,9 +121,7 @@ def insert_data_in_db(table, keys, values):
 # 반환값 : 없음
 def update_data_in_db(table, col, value, where):
     db = connect_db()
-    
     data = ""
-    
     col = col.split(",")
     
     if len(col) == 1:

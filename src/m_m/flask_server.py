@@ -9,13 +9,10 @@
 
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import pymysql
-# import requests
-# import os, csv, time, re, sys
 import os
 import time
 import sys
 import subprocess
-# import json
 import logging
 from socket import *
 from datetime import datetime as dt
@@ -88,7 +85,7 @@ def id_exist(user_id):
         try:
             with db.cursor() as cursor:
                 id_result = 0
-                cursor.execute('select EXISTS(select id from users where id="%s") as success'%user_id)
+                cursor.execute(f'select EXISTS(select id from users where id="{user_id}") as success')
                 id_result = cursor.fetchone()[0]
         finally:
             pass
@@ -104,7 +101,7 @@ def insert_data_in_db(table, keys, values):
     db = connect_db()
     
     with db.cursor() as cursor:
-        sql_qur = "insert into %s (%s) values(%s)"%(table, keys, values)
+        sql_qur = f"insert into {table} ({keys}) values({values})"
         cursor.execute(sql_qur)
         
         this_id = db.insert_id()
@@ -125,17 +122,17 @@ def update_data_in_db(table, col, value, where):
     col = col.split(",")
     
     if len(col) == 1:
-        data = col[0] + ' = "' + value[0] + '"'
+        data = f'{col[0]} = "{value[0]}"'
         
     else:
         for i in range(len(col)):
             if i > 0:
                 data += ","
-            data = data + col[i] + "='" + value[i].replace("'", "''") + "' "
-    
+            data += f"""{col[i]} = '{value[i].replace("'", "''")}' """
+     
     with db.cursor() as cursor:
         #sql_qur = "update %s set %s = '%s' %s"%(table, col, data, where)
-        sql_qur = "update %s set %s %s"%(table, data, where)
+        sql_qur = f"update {table} set {data} {where}"
         
         cursor.execute(sql_qur)
         

@@ -146,7 +146,7 @@ def delete_data_in_db(table, where):
     db = connect_db()
     
     with db.cursor() as cursor:
-        sql_qur = "delete from %s %s"%(table, where)
+        sql_qur = f"delete from {table} {where}"
         
         cursor.execute(sql_qur)
         
@@ -165,7 +165,7 @@ def get_data_from_db(selection, table, target):
 
         # 아이디 찾기 명령일 경우 (개수도 같이 줘야함)
         if selection == "findID":
-            sql_qur = 'select %s from %s %s'%("id", table, target)
+            sql_qur = f'select id from {table} {target}'
             
             result_count = cursor.execute(sql_qur)
             result = cursor.fetchall()
@@ -173,7 +173,7 @@ def get_data_from_db(selection, table, target):
             return (result, result_count)
             
         else:
-            sql_qur = 'select %s from %s %s'%(selection, table, target)
+            sql_qur = f'select {selection} from {table} {target}'
             cursor.execute(sql_qur)
             result = cursor.fetchall()
             
@@ -192,10 +192,14 @@ def get_servers(user_id):
         return []
         
     else:
-        server_list = list( get_data_from_db("name, id", "servers", "where id in (%s) order by name"%(temp[0][0])) )
+        server_list = list(get_data_from_db(
+            "name, id",
+            "servers",
+            f"where id in ({temp[0][0]}) order by name"
+        )
 
         for i in range( len(server_list) ):
-            server_list[i] = server_list[i][0] + ":" + str(server_list[i][1])
+            server_list[i] = ":".join(server_list[i][:1])
         
         return ",".join(server_list)
 

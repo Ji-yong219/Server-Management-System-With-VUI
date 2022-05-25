@@ -85,7 +85,8 @@ def id_exist(user_id):
         try:
             with db.cursor() as cursor:
                 id_result = 0
-                cursor.execute(f'select EXISTS(select id from users where id="{user_id}") as success')
+                cursor.execute(f"SELECT EXISTS(\
+                    select id from users where id="{user_id}") as success")
                 id_result = cursor.fetchone()[0]
         finally:
             pass
@@ -186,7 +187,7 @@ def get_data_from_db(selection, table, target):
 # 인자 : 유저 id
 # 반환값 : ,로 구분된 문자열 형태의 서버 목록
 def get_servers(user_id):
-    temp = get_data_from_db("servers", "users", "where id = '%s'"%(user_id))
+    temp = get_data_from_db("servers", "users", f"where id = '{user_id}'")
     
     if temp == ():
         return []
@@ -196,7 +197,7 @@ def get_servers(user_id):
             "name, id",
             "servers",
             f"where id in ({temp[0][0]}) order by name"
-        )
+        ))
 
         for i in range( len(server_list) ):
             server_list[i] = ":".join(server_list[i][:1])
@@ -220,19 +221,18 @@ def get_data_from_socket(ip, port, id, pw, work, socket_port_idx):
             serverSock.settimeout(2)
             serverSock.listen(1)
         
-            #print("%s서버에 %s포트로 보내서 %s포트로 받음"%(server_name, server_port, socket_port))
             if work.split(".")[1] == "py":
-                command = "plink %s -l %s -pw %s -P %s -batch %s"%\
-                (ip, id, pw, port, "python ./M_M/%s %s"%(work, socket_port))
+                command = f"plink {ip} -l {id} -pw {pw} -P {port} -batch %s"\
+                        + f"python ./M_M/{work} {socket_port}"
                 
             elif work.split("@policy@")[0] == "mysql_policy_output.sh":
                 mysql_pw = work.split("@policy@")[1].replace("'", "+@+@+")
-                command = "plink %s -l %s -pw %s -P %s -batch %s"%\
-                (ip, id, pw, port, "./M_M/%s %s '%s'"%(work.split("@policy@")[0], socket_port, mysql_pw))
+                command = f"plink {ip} -l {id} -pw {pw} -P {port} -batch %s"\
+                + f"./M_M/{work.split('@policy@')[0]} {socket_port} '{mysql_pw}'"
                 
             else:
-                command = "plink %s -l %s -pw %s -P %s -batch %s"%\
-                (ip, id, pw, port, "./M_M/%s %s"%(work, socket_port))
+                command = f"plink {ip} -l {id} -pw {pw} -P {port} -batch %s"\
+                + f"./M_M/{work} {socket_port}"
             
             result = os.system(command)
         

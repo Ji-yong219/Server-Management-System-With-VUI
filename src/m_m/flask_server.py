@@ -281,8 +281,11 @@ def connect_socket_to_client(server_list = None):
         
         if server_list != ['']:
             for i in range(len(server_list)):
-                server_info = get_data_from_db("name, ip, ssh_id, ssh_pw, port, id", "servers", "where id = %s"\
-                %( server_list[i].split(":")[1]) )[0]
+                server_info = get_data_from_db(
+                    "name, ip, ssh_id, ssh_pw, port, id",
+                    "servers",
+                    f"where id = {server_list[i].split(':')[1]}"
+                )[0]
                 
                 server_name = str(server_info[0])
                 server_ip = str(server_info[1])
@@ -292,38 +295,59 @@ def connect_socket_to_client(server_list = None):
                 server_id = str(server_info[5])
                 
                 
-                contain = """'[Unit]
+                contain = f"""'[Unit]
 After=network.target
 
 [Service]
 Type=simple
 User=root
 Group=root
-Environment=port=%s user=%s server=%s
+Environment=port={LISTEN_PORT} user={user_id} server={server_id}
 ExecStart=/bin/python /root/M_M/socket_client.py $port $user $server
 Restart=on-failure
 
 [Install]
-WantedBy=multi-user.target'"""%(LISTEN_PORT, user_id, server_id)
+WantedBy=multi-user.target'"""
 
 
-                command = "plink %s -l %s -pw %s -P %s -batch \"%s\""%\
-                (server_ip, ssh_id, ssh_pw, server_port, "echo -e %s > /usr/lib/systemd/system/m_m_socket.service"%contain)
+                command = " ".join([
+                    f"plink {server_ip}",
+                    f"-l {ssh_id}",
+                    f"-pw {ssh_pw}",
+                    f"-P {server_port}",
+                    f"-batch",
+                    '"echo -e',
+                    f'{contain} > /usr/lib/systemd/system/m_m_socket.service"'])
                 
                 subprocess.Popen(command)
                 
-                command = "plink %s -l %s -pw %s -P %s -batch \"systemctl daemon-reload\""%\
-                (server_ip, ssh_id, ssh_pw, server_port)
+                command = " ".join([
+                    f"plink {server_ip}",
+                    f"-l {ssh_id}",
+                    f"-pw {ssh_pw}",
+                    f"-P {server_port}",
+                    f"-batch",
+                    '"systemctl daemon-reload"'])
                 
                 subprocess.Popen(command)
                 
-                command = "plink %s -l %s -pw %s -P %s -batch \"systemctl restart m_m_socket\""%\
-                (server_ip, ssh_id, ssh_pw, server_port)
+                command = " ".join([
+                    f"plink {server_ip}",
+                    f"-l {ssh_id}",
+                    f"-pw {ssh_pw}",
+                    f"-P {server_port}",
+                    f"-batch",
+                    '"systemctl restart m_m_socket"'])
                 
                 subprocess.Popen(command)
                 
-                command = "plink %s -l %s -pw %s -P %s -batch \"systemctl enable m_m_socket\""%\
-                (server_ip, ssh_id, ssh_pw, server_port)
+                command = " ".join([
+                    f"plink {server_ip}",
+                    f"-l {ssh_id}",
+                    f"-pw {ssh_pw}",
+                    f"-P {server_port}",
+                    f"-batch",
+                    '"systemctl enable m_m_socket"'])
                 
                 subprocess.Popen(command)
     

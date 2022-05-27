@@ -371,7 +371,11 @@ def checking_login ():
         if len(user_id) >= 4: #ID 길이가 4자 이상인 경우
             if id_exist(user_id): #ID가 DB에 존재하는 경우
             
-                db_pw = get_data_from_db("pw", "users", "where id = '%s'"%(user_id))[0][0]
+                db_pw = get_data_from_db(
+                    "pw",
+                    "users",
+                    f"where id = '{user_id}'"
+                )[0][0]
 
                 if user_pw == db_pw: # DB에 있는 비밀번호와 같은 경우
                     session['user_id'] = user_id
@@ -381,11 +385,20 @@ def checking_login ():
                     return redirect("/main")
                     
                 else:
-                    return "<script>alert('비밀번호가 잘못되었습니다.');window.location.replace('/')</script>" + render_template("index.html")
+                    return """<script>
+                                alert('비밀번호가 잘못되었습니다.');
+                                window.location.replace('/')
+                            </script>""" + render_template("index.html")
             else:
-                return "<script>alert('존재하지 않는 아이디입니다.');window.location.replace('/')</script>" + render_template("index.html")
+                return """<script>
+                            alert('존재하지 않는 아이디입니다.');
+                            window.location.replace('/')
+                        </script>""" + render_template("index.html")
         else:
-            return "<script>alert('아이디는 4자 이상 입력해주세요.');window.location.replace('/')</script>" + render_template("index.html")
+            return """<script>
+                        alert('아이디는 4자 이상 입력해주세요.');
+                        window.location.replace('/')
+                    </script>""" + render_template("index.html")
             
     except Exception as e:
         _, _ , tb = sys.exc_info() # tb -> traceback object

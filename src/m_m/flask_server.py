@@ -403,8 +403,8 @@ def checking_login ():
     except Exception as e:
         _, _ , tb = sys.exc_info() # tb -> traceback object
         error_str = f"file name = {__file__}"
-        error_str += "\n"+f"error line No = {tb.tb_lineno}"
-        error_str += "\n"+str(e)
+        error_str += f"\nerror line No = {tb.tb_lineno}"
+        error_str += f"\n{e}"
 
         return render_template("error.html", error = str(error_str))
     
@@ -434,8 +434,12 @@ def checking_regist ():
         
         if len(user_id) >= 4: #ID 길이가 4자 이상인 경우
             if not id_exist(user_id): #ID가 DB에 존재하는 경우
-                insert_data_in_db("users", "id,pw,name,q_a,join_date",\
-                ",".join(['"'+user_id+'"', '"'+user_pw+'"', '"'+user_name+'"', '"DBLAB"', "now()"]))
+                insert_data_in_db(
+                    "users",
+                    "id,pw,name,q_a,join_date",
+                    f'"{user_id}","{user_pw}","{user_name}","DBLAB","now()"'
+                )
+                # ",".join(['"'+user_id+'"', '"'+user_pw+'"', '"'+user_name+'"', '"DBLAB"', "now()"]))
             
                 session['user_id'] = user_id
                 

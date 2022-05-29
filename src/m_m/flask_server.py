@@ -462,7 +462,11 @@ def find_id():
         user_name = request.form['name']
         result_id = []
 
-        result_all, result_count = get_data_from_db('findID', 'users', 'where name = "%s"'%user_name)
+        result_all, result_count = get_data_from_db(
+                                        'findID',
+                                        'users',
+                                        f'where name = "{user_name}"'
+                                    )
 
         for i in range( result_count ):
             result_id.append(result_all[i][0])
@@ -491,15 +495,24 @@ def find_pw():
             user_name = request.form['name']
 
             if id_exist(user_name):
-                return render_template('find_pw.html', name_chk='yes', user_name = user_name, id_result='')
+                return render_template(
+                    'find_pw.html',
+                    name_chk='yes',
+                    user_name = user_name,
+                    id_result=''
+                )
             else:
-                return render_template('find_pw.html', name_chk='no', id_result='no')
+                return render_template(
+                    'find_pw.html',
+                    name_chk='no',
+                    id_result='no'
+                )
 
         if 'pw' in request.form:
             user_pw = request.form['pw']
             user_id = request.form['user_name']
 
-            update_data_in_db("users", "pw", user_pw, 'where id="%s"'%user_id)
+            update_data_in_db("users", "pw", user_pw, f'where id="{user_id}"')
 
             return redirect("/")
             
@@ -518,9 +531,16 @@ def get_info():
         user_id = request.form["give_me_server_list"]
         if user_id == session["user_id"]:
         
-            temp = get_data_from_db("servers", "users", "where id = '%s'"%(user_id))[0]
+            temp = get_data_from_db(
+                "servers",
+                "users",
+                f"where id = '{user_id}'"
+            )[0]
             
-            user_server_list = list( get_data_from_db("name, ip, port, id", "servers", "where id in (%s) order by name"%(temp)) )
+            user_server_list = list( get_data_from_db(
+                    "name, ip, port, id", "servers",
+                    f"where id in ({temp}) order by name")
+            )
             temp = None
             
             for i in range( len(user_server_list) ):

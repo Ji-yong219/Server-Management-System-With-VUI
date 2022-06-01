@@ -563,25 +563,28 @@ def insert_server():
         target_keys = "name, ip, ssh_id, ssh_pw, port, users, date"
         
         target_values = []
-        target_values.append("'"+str(request.form["insert_name"])+"'")
-        target_values.append("'"+str(ip)+"'")
-        target_values.append("'"+str(ssh_id)+"'")
-        target_values.append("'"+str(ssh_pw)+"'")
-        target_values.append("'"+str(port)+"'")
+        target_values.append(f"""'{request.form["insert_name"]}'""")
+        target_values.append(f"'{ip}'")
+        target_values.append(f"'{ssh_id}'")
+        target_values.append(f"'ssh_pw'")
+        target_values.append(f"'port'")
         # target_values.append("'"+os+"'")
         # target_values.append("'"+kernel+"'")
         # target_values.append("'"+arch+"'")
         # target_values.append("'"+pro+"'")
         # target_values.append("'"+ram+"'")
         # target_values.append("'"+sto+"'")
-        target_values.append("'"+session["user_id"]+"'")
+        target_values.append(f"""'{session["user_id"]}'""")
         target_values.append("now()")
         target_values = ",".join(target_values)
     
         this_id = insert_data_in_db("servers", target_keys, target_values)
         
-        user_servers_id = get_data_from_db("servers", "users", "where id = '%s'"%\
-        (session["user_id"]))
+        user_servers_id = get_data_from_db(
+            "servers",
+            "users",
+            f"""where id = '{session["user_id"]}'"""
+        )
         
         if user_servers_id == ():
             user_servers_id = []
@@ -596,7 +599,7 @@ def insert_server():
             
         user_servers_id = [",".join(user_servers_id)]
         
-        where = "where id='%s'"%(session['user_id'])
+        where = f"""where id='{session['user_id']}'"""
         update_data_in_db("users", "servers", user_servers_id, where)
     
         return redirect(url_for('go_main_page'))

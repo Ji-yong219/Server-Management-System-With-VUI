@@ -620,13 +620,17 @@ def delete_server():
     if "delete_server_id" in request.form:
         server_id = request.form["delete_server_id"]
         where = "where id = %s"%(server_id)
-        server_list = get_data_from_db("servers", "users", "where id = '%s'"%(session["user_id"]))[0][0]
+        server_list = get_data_from_db(
+            "servers",
+            "users",
+            """where id = '{session["user_id"]}'"""
+        )[0][0]
         
         server_list = server_list.split(",")
         server_list.remove(server_id)
         server_list = [",".join(server_list)]
     
-        where2 = "where id='%s'"%(session['user_id'])
+        where2 = "where id='[session['user_id']]'"
         
         update_data_in_db("users", "servers", server_list, where2)
         delete_data_in_db("servers", where)

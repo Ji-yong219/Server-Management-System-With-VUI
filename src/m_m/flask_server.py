@@ -609,7 +609,7 @@ def insert_server():
             'user_id' : session['user_id'],
             'user_servers' : user_servers
         }
-        
+
         return "<script>window.location.replace('/monitoring')</script>" +\
         render_template("monitoring.html", **web_args)
 
@@ -638,7 +638,7 @@ def delete_server():
         return jsonify(date = "success")
 
 
-#서버 수정 라우트
+#서버 수정 라우트   
 @app_flask.route("/modify_server", methods = ["POST"])
 def modify_server():
     global linux_connection
@@ -648,10 +648,13 @@ def modify_server():
         ip = request.form["server_ip"]
         port = request.form["server_port"]
 
-        server_info = get_data_from_db("ssh_id,ssh_pw,name,ip,port,OS,kernel,arch,processor,ram,storage\
-        ,mysql_ver,mysql_port,mysql_reset_pw,mysql_pw_policy_chk_name,mysql_pw_policy_dic_file\
-        ,mysql_pw_policy_length,mysql_pw_policy_mix_count,mysql_pw_policy_num_count,mysql_pw_policy_type,mysql_pw_policy_special_count",\
-        "servers", "where id = %s"%(server_idx))[0]
+        server_info = get_data_from_db(f"ssh_id,ssh_pw,name,ip,port,OS,kernel\
+            ,arch,processor,ram,storage,mysql_ver,mysql_port,mysql_reset_pw\
+            ,mysql_pw_policy_chk_name,mysql_pw_policy_dic_file\
+            ,mysql_pw_policy_length,mysql_pw_policy_mix_count\
+            ,mysql_pw_policy_num_count,mysql_pw_policy_type\
+            ,mysql_pw_policy_special_count","servers"\
+            ,"where id = {server_idx}")[0]
         
         ssh_id = server_info[0]
         ssh_pw = server_info[1]
@@ -659,7 +662,7 @@ def modify_server():
         # 서버가 꺼져 있을 때 (기본 정보만 수정)
         if linux_connection.get(server_idx) is None:
         
-            where = "where id='%s'"%server_idx
+            where = f"where id='{server_idx}'"
         
             columns = "name,ip,port"
             
@@ -684,7 +687,11 @@ def modify_server():
 
         os,kernel,arch,pro,ram,sto,mysql = data.split(",")
         
-        mysql_pw = get_data_from_db("mysql_pw", "servers", "where id = %s"%(server_idx))[0][0]
+        mysql_pw = get_data_from_db(
+            "mysql_pw",
+            "servers",
+            f"where id = {server_idx}"
+        )[0][0]
     
         if mysql == 'unknown':  mysql = "unknown:unknown:-1\nunknown"
         

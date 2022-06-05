@@ -697,7 +697,9 @@ def modify_server():
         
         ms_ver, ms_port, ms_status = mysql.replace("'", '').split(":")
 
-        linux_connection[server_idx][0].send(("mysql_policy_output:%s"%mysql_pw).encode())
+        linux_connection[server_idx][0].send(
+            (f"mysql_policy_output:{mysql_pw}").encode()
+        )
         
         while True:
             if linux_connection[server_idx][1] != "":
@@ -706,24 +708,48 @@ def modify_server():
                 break
 
         if len(mysql2.split(";")) == 7:
-            ms_chk_name, ms_DF, ms_leng, ms_mix_count, ms_num_count, ms_policy_type, ms_special_count = mysql2.split(";")
+            (
+                ms_chk_name,
+                ms_DF, ms_leng,
+                ms_mix_count,
+                ms_num_count,
+                ms_policy_type,
+                ms_special_count
+            ) = mysql2.split(";")
             
         else:
-            ms_chk_name, ms_DF, ms_leng, ms_mix_count, ms_num_count, ms_policy_type, ms_special_count = \
-            ('Not installed','Not installed','Not installed','Not installed','Not installed','Not installed','Not installed')
+            (
+                ms_chk_name,
+                ms_DF,
+                ms_leng,
+                ms_mix_count,
+                ms_num_count,
+                ms_policy_type,
+                ms_special_count
+            ) = (
+                'Not installed',
+                'Not installed',
+                'Not installed',
+                'Not installed',
+                'Not installed',
+                'Not installed',
+                'Not installed'
+            )
         
         
-        where = "where id='%s'"%server_idx
+        where = f"where id='{server_idx}'"
         
-        columns = "name,ip,port,OS,kernel,arch,processor,ram,storage,\
-        mysql_ver,mysql_port,mysql_pw_policy_chk_name,mysql_pw_policy_dic_file,\
-        mysql_pw_policy_length,mysql_pw_policy_mix_count,mysql_pw_policy_num_count,\
-        mysql_pw_policy_type,mysql_pw_policy_special_count"
+        columns = "name,ip,port,OS,kernel,arch,processor,ram,storage,mysql_ver\
+            ,mysql_port,mysql_pw_policy_chk_name,mysql_pw_policy_dic_file\
+            ,mysql_pw_policy_length,mysql_pw_policy_mix_count\
+            ,mysql_pw_policy_num_count,mysql_pw_policy_type\
+            ,mysql_pw_policy_special_count"
         
-        values = [name,ip,port,os,kernel,arch,pro,ram,sto,\
-        ms_ver,ms_port,ms_chk_name,ms_DF,\
-        ms_leng,ms_mix_count,ms_num_count,\
-        ms_policy_type,ms_special_count]
+        values = [
+            name, ip, port, os, kernel, arch, pro, ram, sto, ms_ver,
+            ms_port, ms_chk_name, ms_DF, ms_leng, ms_mix_count, ms_num_count,
+            ms_policy_type, ms_special_count
+        ]
         
         for i in range(len(values)):
             if values[i] == "":

@@ -816,7 +816,7 @@ def go_monitoring_page ():
                 ,ram,storage,mysql_ver,mysql_port,mysql_reset_pw,mysql_pw_policy_chk_name\
                 ,mysql_pw_policy_length,mysql_pw_policy_mix_count\
                 ,mysql_pw_policy_num_count,mysql_pw_policy_type,mysql_pw_policy_special_count",\
-                "servers", "where id = %s"%(target_server))[0]
+                "servers", f"where id = {target_server}")[0]
                 server_name = str(server_info[1])
                 server_ip = str(server_info[2])
                 server_port = str(server_info[3])

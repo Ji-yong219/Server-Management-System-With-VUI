@@ -812,11 +812,12 @@ def go_monitoring_page ():
             target_server = request.form["select_server"]
             
             try:
-                server_info = get_data_from_db("id,name,ip,port,OS,kernel,arch,processor\
-                ,ram,storage,mysql_ver,mysql_port,mysql_reset_pw,mysql_pw_policy_chk_name\
-                ,mysql_pw_policy_length,mysql_pw_policy_mix_count\
-                ,mysql_pw_policy_num_count,mysql_pw_policy_type,mysql_pw_policy_special_count",\
-                "servers", f"where id = {target_server}")[0]
+                server_info = get_data_from_db("id,name,ip,port,OS,kernel,arch,\
+                    processor,ram,storage,mysql_ver,mysql_port,mysql_reset_pw,\
+                    mysql_pw_policy_chk_name,mysql_pw_policy_length,\
+                    mysql_pw_policy_mix_count,mysql_pw_policy_num_count,\
+                    mysql_pw_policy_type,mysql_pw_policy_special_count",
+                    "servers", f"where id = {target_server}")[0]
                 server_name = str(server_info[1])
                 server_ip = str(server_info[2])
                 server_port = str(server_info[3])
@@ -886,11 +887,12 @@ def go_detail_page ():
             target_server = request.args.get("select_server")
             
             try:
-                server_info = get_data_from_db("id,name,ip,port,OS,kernel,arch,processor\
-                ,ram,storage,mysql_ver,mysql_port,mysql_reset_pw,mysql_pw_policy_chk_name\
-                ,mysql_pw_policy_length,mysql_pw_policy_mix_count\
-                ,mysql_pw_policy_num_count,mysql_pw_policy_type,mysql_pw_policy_special_count",\
-                "servers", "where id = %s"%(target_server))[0]
+                server_info = get_data_from_db("id,name,ip,port,OS,kernel,arch,\
+                    processor,ram,storage,mysql_ver,mysql_port,mysql_reset_pw,\
+                    mysql_pw_policy_chk_name,mysql_pw_policy_length,\
+                    mysql_pw_policy_mix_count,mysql_pw_policy_num_count,\
+                    mysql_pw_policy_type,mysql_pw_policy_special_count",
+                    "servers", f"where id = {target_server}")[0]
                 server_name = str(server_info[1])
                 server_ip = str(server_info[2])
                 server_port = str(server_info[3])

@@ -959,8 +959,11 @@ def send_command(data):
     work_name = data['command'].encode('latin1').decode('utf8')
     
     for i in server_list.split(","):
-        server_info = get_data_from_db("name, ip, ssh_id, ssh_pw, port", "servers", "where id = %s"\
-        %(i))[0]
+        server_info = get_data_from_db(
+            "name, ip, ssh_id, ssh_pw, port",
+            "servers",
+            f"where id = {i}"
+        )[0]
         # server_name = str(server_info[0])
         server_ip = str(server_info[1])
         server_id = str(server_info[2])

@@ -975,13 +975,13 @@ def send_command(data):
             target = "./src/m_m/command_files/*"
             path = "/root/"
             
-            command = "pscp -pw %s -p -P %s %s %s@%s:%s"%\
-            (server_pw, server_port, target, server_id, server_ip, path)
+            command = f"pscp -pw {server_pw} -p -P {server_port} {target}\
+                 {server_id}@{server_ip}:{path}"
             
             os.system(command)
             
-            command = "plink %s -l %s -pw %s -P %s -batch tar xvfm /root/M_M.tar"%\
-            (server_ip, server_id, server_pw, server_port)
+            command = f"plink {server_ip} -l {server_id} -pw {server_pw} -P \
+                {server_port} -batch tar xvfm /root/M_M.tar"
             
             os.system(command)
             
@@ -990,8 +990,8 @@ def send_command(data):
         
         # 보안 점검
         elif work_name == "security_check":
-            path = "/root/M_M/" + i + "_security_result.log"
-            target = "./src/m_m/log_files/" + i + "_sr.log"
+            path = f"/root/M_M/{i}_security_result.log"
+            target = f"./src/m_m/log_files/{i}_sr.log"
             
             command = "security_check"
             linux_connection[i][0].send(command.encode())
@@ -1003,23 +1003,23 @@ def send_command(data):
                     linux_connection[i][2] = ""
                     break
             
-            command = "pscp -pw %s -p -P %s %s@%s:%s %s"%\
-            (server_pw, server_port, server_id, server_ip, path, target)
+            command = f"pscp -pw {server_port} -p -P {server_port} \
+                {server_id}@{server_ip}:{path} {target}"
             
             os.system(command)
             
             time.sleep(2)
             
-            with open( "./src/m_m/log_files/%s"%(i + "_sr.log"), "r", encoding="utf8" ) as f:
+            with open( f"./src/m_m/log_files/{i}_sr.log", "r", encoding="utf8" ) as f:
                 check_result = f.readlines()
             
             good, warning, danger = check_result[0].strip().split(",")
             
             now_datetime = dt.today()
             
-            log_file_name = i+"_"+ now_datetime.strftime("%Y%m%d%H%M%S")+".log"
+            log_file_name = f"{i}_{now_datetime.strftime('%Y%m%d%H%M%S')}.log"
             
-            command = "REN .\\src\\m_m\\log_files\\%s %s"%(i + "_sr.log", log_file_name)
+            command = f"REN .\\src\\m_m\\log_files\\{i}_sr.log {log_file_name}"
             
             target_keys = "date,id,good,warning,danger,log"
             

@@ -1023,7 +1023,7 @@ def send_command(data):
             
             target_keys = "date,id,good,warning,danger,log"
             
-            target_values = ["'"+now_datetime.strftime("%Y-%m-%d %H:%M:%S")+"'"]
+            target_values = [f"""'{now_datetime.strftime("%Y-%m-%d %H:%M:%S")}'"""]
             target_values.extend([i, good, warning, danger])
             target_values.append("'" + log_file_name + "'")
             target_values = ",".join(target_values)

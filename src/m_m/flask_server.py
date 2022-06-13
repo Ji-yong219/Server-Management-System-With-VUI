@@ -1010,7 +1010,11 @@ def send_command(data):
             
             time.sleep(2)
             
-            with open( f"./src/m_m/log_files/{i}_sr.log", "r", encoding="utf8" ) as f:
+            with open(
+                        f"./src/m_m/log_files/{i}_sr.log",
+                        "r",
+                        encoding="utf8"
+                    ) as f:
                 check_result = f.readlines()
             
             good, warning, danger = check_result[0].strip().split(",")
@@ -1023,7 +1027,9 @@ def send_command(data):
             
             target_keys = "date,id,good,warning,danger,log"
             
-            target_values = [f"""'{now_datetime.strftime("%Y-%m-%d %H:%M:%S")}'"""]
+            target_values = [
+                f"""'{now_datetime.strftime("%Y-%m-%d %H:%M:%S")}'"""
+            ]
             target_values.extend([i, good, warning, danger])
             target_values.append("'" + log_file_name + "'")
             target_values = ",".join(target_values)
@@ -1037,67 +1043,100 @@ def send_command(data):
         
         elif "ch_mysql_pw" in work_name:
             new_pw = work_name.split("/:,:/")[1]
-            now_pw = get_data_from_db("mysql_pw", "servers", "where id = %s"%i)[0][0]
+            now_pw = get_data_from_db(
+                "mysql_pw",
+                "servers",
+                f"where id = {i}"
+            )[0][0]
             
-            where = 'where id = %s'%i
+            where = f'where id = {i}'
             update_data_in_db("servers", 'mysql_pw', [new_pw], where)
             
             now_pw = now_pw.replace('"', "-@-@-").replace("'", "+@+@+")
             
             new_pw = new_pw.replace('"', "-@-@-").replace("'", "+@+@+")
             
-            work_name = "mysql_pw_ch.sh '"+now_pw+"' '"+new_pw+"'"
+            work_name = f"mysql_pw_ch.sh '{now_pw}' '{new_pw}'"
             
-            command = "/root/M_M/%s >> /root/M_M/error.log"%work_name
-            print (command)
+            command = f"/root/M_M/{work_name} >> /root/M_M/error.log"
+            # print (command)
             linux_connection[i][0].send(command.encode())
             
         elif "ch_mysql_policy" in work_name:
-            key_list = ["mysql_pw_policy_chk_name","mysql_pw_policy_length","mysql_pw_policy_mix_count"\
-            ,"mysql_pw_policy_num_count","mysql_pw_policy_type","mysql_pw_policy_special_count"]
+            key_list = [
+                "mysql_pw_policy_chk_name",
+                "mysql_pw_policy_length",
+                "mysql_pw_policy_mix_count",
+                "mysql_pw_policy_num_count",
+                "mysql_pw_policy_type",
+                "mysql_pw_policy_special_count"
+            ]
             
             value_list = work_name.split("/:,:/")[1].split(";")
             
-            now_pw = get_data_from_db("mysql_pw", "servers", "where id = %s"%i)[0][0]
-            ver = get_data_from_db("mysql_ver", "servers", "where id = %s"%i)[0][0]
+            now_pw = get_data_from_db(
+                "mysql_pw",
+                "servers",
+                f"where id = {i}"
+            )[0][0]
+
+            ver = get_data_from_db(
+                "mysql_ver",
+                "servers",
+                f"where id = {i}"
+            )[0][0]
             
-            where = 'where id = %s'%i
+            where = f'where id = {i}'
             
             for j in range(len(key_list)):
                 if value_list[j] is None or value_list[j] == "":
                     continue
                     
-                update_data_in_db("servers", key_list[j], [value_list[j]], where)
+                update_data_in_db(
+                    "servers",
+                    key_list[j],
+                    [value_list[j]],
+                    where
+                )
             
                 now_pw = now_pw.replace('"', "-@-@-").replace("'", "+@+@+")
                 
-                work_name = "mysql_policy_ch.sh '" +now_pw+"' "+ ver[0]+" "+str(j)+" "+ value_list[j]
+                work_name = f"mysql_policy_ch.sh \
+                             '{now_pw}' {ver[0]} {j} {value_list[j]}"
             
-                command = "/root/M_M/%s"%(work_name)
+                command = f"/root/M_M/{work_name}"
                 
                 linux_connection[i][0].send(command.encode())
         
         elif work_name == "mysql_backup.sh":
-            now_pw = get_data_from_db("mysql_pw", "servers", "where id = %s"%i)[0][0]
+            now_pw = get_data_from_db(
+                "mysql_pw",
+                "servers",
+                f"where id = {i}"
+            )[0][0]
             
             now_pw = now_pw.replace('"', "-@-@-").replace("'", "+@+@+")
             
-            work_name = "mysql_backup.sh '" + now_pw +"'"
+            work_name = f"mysql_backup.sh '{now_pw}'"
             
-            command = "/root/M_M/%s"%(work_name)
+            command = f"/root/M_M/{work_name}"
             
             linux_connection[i][0].send(command.encode())
             
         elif "mysql_rollback" in work_name:
-            now_pw = get_data_from_db("mysql_pw", "servers", "where id = %s"%i)[0][0]
+            now_pw = get_data_from_db(
+                "mysql_pw",
+                "servers",
+                f"where id = {i}"
+            )[0][0]
             
             now_pw = now_pw.replace('"', "-@-@-").replace("'", "+@+@+")
             
             file_name = work_name.split(":")[1]
             
-            work_name = "mysql_rollback.sh '" + now_pw+"' " + file_name
+            work_name = f"mysql_rollback.sh '{now_pw}' {file_name}"
             
-            command = "/root/M_M/%s"%(work_name)
+            command = f"/root/M_M/{work_name}"
             
             linux_connection[i][0].send(command.encode())
             
@@ -1111,7 +1150,7 @@ def send_command(data):
                     result = linux_connection[i][2].split(";")[1]
                     break
             
-            result = work_name.split(":")[1]+ ";" + result
+            result = f"{work_name.split(':')[1]};{result}"
             
             # 웹 반환
             emit("linux_info", {'data':result})

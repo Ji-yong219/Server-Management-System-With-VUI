@@ -1157,7 +1157,7 @@ def send_command(data):
             
         else:
             # command = "plink %s -l %s -pw %s -P %s -batch %s"%\
-            # (server_ip, server_id, server_pw, server_port, "./M_M/%s"%(work_name))
+            # (server_ip, server_id, server_pw, server_port, f"./M_M/{work_name}")
             # os.system(command)
             # linux_connection[user_id][1][i].send(work_name.encode())
             linux_connection[i][0].send(work_name.encode())
@@ -1185,9 +1185,8 @@ def send_command(data):
 def request_monitoring(data):
     global linux_connection
     
-    client_id = request.sid
-    
-    user_id = data['user_id'].encode('latin1').decode('utf8')
+    # client_id = request.sid
+    # user_id = data['user_id'].encode('latin1').decode('utf8')
     
     monitoring_data = []
     
@@ -1211,9 +1210,9 @@ def request_monitoring(data):
 def request_usage(data):
     global linux_connection
     
-    client_id = request.sid
-    
-    user_id = data['user_id'].encode('latin1').decode('utf8')
+    # client_id = request.sid
+    # user_id = data['user_id'].encode('latin1').decode('utf8')
+
     server_idx = data['server_idx'].encode('latin1').decode('utf8')
     
     if server_idx in linux_connection.keys():
@@ -1231,13 +1230,13 @@ def request_usage(data):
 
 
 server_url_dic = {
-    '모니터링페이지':'/monitoring',
-    '작업페이지':'/work',
-    '세부정보페이지':'/detail',
-    '상세정보페이지':'/detail'
+    "모니터링페이지":"/monitoring",
+    "작업페이지":"/work",
+    "세부정보페이지":"/detail",
+    "상세정보페이지":"/detail"
 }
 data_list = {
-    '창': '/popup'
+    "창": "/popup"
 }
 command_list = [
     ["유저목록", "유저리스트", "유저들", "사용자목록", "사용자리스트", "사용자들"],
@@ -1249,12 +1248,12 @@ command_list = [
 
 
 #음성 명령 요청 응답
-@socketio.on('voice_command', namespace='/socket')
+@socketio.on("voice_command", namespace="/socket")
 def voice_command(data):
-    user_id = data.get('id')
-    command_text = data.get('text')
+    user_id = data.get("id")
+    command_text = data.get("text")
     
-    print("\n\n\n\n음성인식결과:",command_text)
+    print("\n\n\n\n음성인식결과:", command_text)
     
     server_list = get_servers(user_id).split(",")
     server_id_list = [ i.split(":")[1] for i in server_list ]
@@ -1298,14 +1297,27 @@ def voice_command(data):
             command['action'] = "/popup"
 
         elif command.get('action') == "서버목록":
-            temp = get_data_from_db("servers", "users", "where id = '%s'"%(user_id))[0]
+            temp = get_data_from_db(
+                "servers",
+                "users",
+                f"where id = '{user_id}'"
+            )[0]
             
-            user_server_list = list( get_data_from_db("name, ip, port, id", "servers", "where id in (%s)"%(temp)) )
+            user_server_list = list( get_data_from_db(
+                "name, ip, port, id",
+                "servers",
+                f"where id in ({temp})"
+            ))
             
             for i in range( len(user_server_list) ):
                 user_server_list[i] = list(user_server_list[i])
             
-            command['action'] = [['서버 이름', 'IP', 'SSH 포트', '서버 ID']] + user_server_list
+            command['action'] = [[
+                "서버 이름",
+                "IP",
+                "SSH 포트",
+                "서버 ID"
+            ]]+ user_server_list
 
         else:
             command['type'] = 'error'
@@ -1326,7 +1338,7 @@ def voice_command(data):
             server_id = command.get('target')
 
             if server_id in server_id_list:
-                connect_socket_to_client(["temp:"+server_id])
+                connect_socket_to_client([f"temp:{server_id}"])
                 command['type'] = 'error'
                 command['action'] = '성공적으로 해당 서버에 연결을 시도했습니다.'
 
@@ -1341,24 +1353,27 @@ def voice_command(data):
                 target = "./src/m_m/command_files/*"
                 path = "/root/"
                 
-                server_info = get_data_from_db("ip, ssh_pw, port", "servers", "where id = %s"\
-                %(server_id))[0]
+                server_info = get_data_from_db(
+                    "ip, ssh_pw, port",
+                    "servers",
+                    f"where id = {server_id}"
+                )[0]
                 server_ip = str(server_info[0])
                 server_pw = str(server_info[1])
                 server_port = str(server_info[2])
 
-                ssh_command = "pscp -pw %s -p -P %s %s root@%s:%s"%\
-                (server_pw, server_port, target, server_ip, path)
+                ssh_command = f"pscp -pw {server_pw} -p -P {server_port} \
+                    {target} root@{server_ip}:{path}"
                 
                 os.system(ssh_command)
                 
-                ssh_command = "plink %s -l root -pw %s -P %s -batch tar xvfm /root/M_M.tar"%\
-                (server_ip, server_pw, server_port)
+                ssh_command = f"plink {server_ip} -l root -pw {server_pw} \
+                    -P {server_port} -batch tar xvfm /root/M_M.tar"
                 
                 os.system(ssh_command)
                 
                 # 소켓 프로그램 실행시키기
-                connect_socket_to_client(["temp:"+server_id])
+                connect_socket_to_client([f"temp:{server_id}"])
 
                 command['type'] = 'error'
                 command['action'] = '성공적으로 해당 서버의 파일을 업데이트했습니다.'
@@ -1367,21 +1382,24 @@ def voice_command(data):
             server_id = command.get('target')
 
             if server_id in server_id_list:
-                connect_socket_to_client(["temp:"+server_id])
+                connect_socket_to_client([f"temp:{server_id}"])
                 time.sleep(2)
 
                 target = "./src/m_m/command_files/*"
                 path = "/root/"
                 
-                server_info = get_data_from_db("ip, ssh_pw, port", "servers", "where id = %s"\
-                %(server_id))[0]
+                server_info = get_data_from_db(
+                    "ip, ssh_pw, port",
+                    "servers",
+                    f"where id = {server_id}"
+                )[0]
                 server_ip = str(server_info[0])
                 server_pw = str(server_info[1])
                 server_port = str(server_info[2])
 
 
-                path = "/root/M_M/" + server_id + "_security_result.log"
-                target = "./src/m_m/log_files/" + server_id + "_sr.log"
+                path = f"/root/M_M/{server_id}_security_result.log"
+                target = f"./src/m_m/log_files/{server_id}_sr.log"
                 
                 ssh_command = "security_check"
                 linux_connection[server_id][0].send(ssh_command.encode())
@@ -1394,29 +1412,36 @@ def voice_command(data):
                         linux_connection[server_id][2] = ""
                         break
                 
-                ssh_command = "pscp -pw %s -p -P %s root@%s:%s %s"%\
-                (server_pw, server_port, server_ip, path, target)
+                ssh_command = f"pscp -pw {server_pw} -p -P {server_port} \
+                    root@{server_ip}:{path} {target}"
                 
                 os.system(ssh_command)
                 
                 time.sleep(2)
                 
-                with open( "./src/m_m/log_files/%s"%(server_id + "_sr.log"), "r", encoding="utf8" ) as f:
+                with open(
+                        f"./src/m_m/log_files/{server_id}_sr.log",
+                        "r", encoding="utf8"
+                    ) as f:
                     check_result = f.readlines()
                 
                 good, warning, danger = check_result[0].strip().split(",")
                 
                 now_datetime = dt.today()
                 
-                log_file_name = server_id+"_"+ now_datetime.strftime("%Y%m%d%H%M%S")+".log"
+                log_file_name = f"{server_id}_\
+                    {now_datetime.strftime('%Y%m%d%H%M%S')}.log"
                 
-                ssh_command = "REN .\\src\\m_m\\log_files\\%s %s"%(server_id + "_sr.log", log_file_name)
+                ssh_command = f"REN .\\src\\m_m\\log_files\\{server_id}_sr.log \
+                    {log_file_name}"
                 
                 target_keys = "date,id,good,warning,danger,log"
                 
-                target_values = ["'"+now_datetime.strftime("%Y-%m-%d %H:%M:%S")+"'"]
+                target_values = [
+                    f"""'{now_datetime.strftime("%Y-%m-%d %H:%M:%S")}'"""
+                ]
                 target_values.extend([server_id, good, warning, danger])
-                target_values.append("'" + log_file_name + "'")
+                target_values.append(f"'{log_file_name}'")
                 target_values = ",".join(target_values)
                 insert_data_in_db("server_check", target_keys, target_values)
                 
@@ -1424,7 +1449,12 @@ def voice_command(data):
                 os.system(ssh_command)
             
                 command['type'] = 's'
-                command['action'] = ['보안 점검 결과', len(check_result)-1, ["항목 코드", "분류", "판단 결과", "점검 항목 결과"], check_result[1:]]
+                command['action'] = [
+                    '보안 점검 결과',
+                    len(check_result)-1,
+                    ["항목 코드", "분류", "판단 결과", "점검 항목 결과"],
+                    check_result[1:]
+                ]
 
             else:
                 command['type'] = 'error'
@@ -1438,13 +1468,17 @@ def voice_command(data):
                 connect_socket_to_client(["temp:"+server_id])
                 time.sleep(1)
 
-                now_pw = get_data_from_db("mysql_pw", "servers", "where id = %s"%server_id)[0][0]
+                now_pw = get_data_from_db(
+                    "mysql_pw",
+                    "servers",
+                    f"where id = {server_id}"
+                )[0][0]
                 
                 now_pw = now_pw.replace('"', "-@-@-").replace("'", "+@+@+")
                 
-                work_name = "mysql_backup.sh '" + now_pw +"'"
+                work_name = f"mysql_backup.sh '{now_pw}'"
                 
-                ssh_command = "/root/M_M/%s"%(work_name)
+                ssh_command = f"/root/M_M/{work_name}"
                 
                 linux_connection[server_id][0].send(ssh_command.encode())
 
@@ -1463,7 +1497,7 @@ def voice_command(data):
         server_id = command.get('target')
 
         if server_id in server_id_list:
-            connect_socket_to_client(["temp:"+server_id])
+            connect_socket_to_client([f"temp:{server_id}"])
 
             request_command = command.get('action')
 

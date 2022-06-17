@@ -1618,7 +1618,8 @@ class TcpHandler(socketserver.StreamRequestHandler):
         
         
         while msg:
-            if msg.decode() and len(msg.decode().split(":")) == 3 and msg.decode().split(":")[0] == "connect":
+            if msg.decode() and len(msg.decode().split(":")) == 3 \
+                    and msg.decode().split(":")[0] == "connect":
                 
                 server_user_id, server_idx = msg.decode().split(":")[1:]
                 

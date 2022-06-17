@@ -11,7 +11,8 @@ try :
 except :
     os.system("curl -O -k https://bootstrap.pypa.io/get-pip.py")
     os.system("python get-pip.py")
-    os.system("pip --trusted-host pypi.org --trusted-host files.pythonhosted.org install pexpect pymysql")
+    os.system("pip --trusted-host pypi.org \
+        --trusted-host files.pythonhosted.org install pexpect pymysql")
     os.system("rm -f get-pip.py")
     import pymysql, pexpect
     
@@ -47,7 +48,6 @@ else:
         else:           
             try:
                 command = recv.decode()
-                # print("\n\nthis:", command)
                 
                 if command is None or command == "":
                     continue
@@ -58,26 +58,25 @@ else:
                     clientSock.send("0%")
                     
                     os.system("systemctl stop mysqld > /dev/null 2>&1")
-                    os.system("rpm -e $(rpm -qa | grep mysql) --nodeps > /dev/null 2>&1")
+                    os.system("rpm -e $(rpm -qa | grep mysql) \
+                        --nodeps > /dev/null 2>&1")
                     os.system("rm -rf /var/lib/mysql")
                     os.system("rm -f /var/log/mysqld.log")
 
-                    os.system("firewall-cmd --zone=public --permanent --add-port=3306/tcp > /dev/null 2>&1")
+                    os.system("firewall-cmd --zone=public --permanent \
+                        --add-port=3306/tcp > /dev/null 2>&1")
                     os.system("firewall-cmd --reload > /dev/null 2>&1")
 
                     clientSock.send("5%")
 
                     if ver == "5.7":
-                        # os.system("rpm -Uvh http://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm > mysql_install.log")
                         os.system("rpm -Uvh http://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm")
                         
                     elif ver == "8.0":
-                        # os.system("rpm -Uvh https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm > mysql_install.log")
                         os.system("rpm -Uvh https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm")
                     
                     clientSock.send("70%")
                     
-                    # os.system("yum -y install mysql-community-server >> mysql_install.log")
                     os.system("yum -y install mysql-community-server")
                     os.system("sed -i '4a\\port=3306' /etc/my.cnf")
 
@@ -87,7 +86,8 @@ else:
 
                     clientSock.send("80%")
 
-                    temp, initial_passwd = get_output("grep 'temporary password' /var/log/mysqld.log")
+                    temp, initial_passwd = get_output("grep 'temporary password'\
+                         /var/log/mysqld.log")
                     initial_passwd = initial_passwd.split()
                     initial_passwd = initial_passwd[len(initial_passwd)-1]
 
@@ -99,7 +99,8 @@ else:
                     clientSock.send("90%")
 
                     mysql.expect("mysql> ")
-                    mysql.sendline("ALTER USER 'root'@'localhost' IDENTIFIED BY '{0}';".format("Mymonitor123!"))
+                    mysql.sendline("ALTER USER 'root'@'localhost' \
+                        IDENTIFIED BY 'Mymonitor123!';")
 
                     mysql.expect("mysql> ")
                     mysql.sendline("flush privileges;")
@@ -114,7 +115,8 @@ else:
                 elif "get_monitoring_data" in command:
                     KERNEL = platform.platform().strip()
                     
-                    CPU = get_output("echo -e $(top -n 1 -b | grep -i cpu\(s\) | awk '{print $2+$4+$6+$10+$12+$14+$16}') ")[-1]
+                    CPU = get_output("echo -e $(top -n 1 -b | grep -i cpu\(s\) \
+                        | awk '{print $2+$4+$6+$10+$12+$14+$16}') ")[-1]
                     
                     mem = str(os.popen('free -t -m').readlines())
                     T_ind = mem.index('T')
@@ -130,14 +132,20 @@ else:
                     
                     RAM = str( round( float(mem_T) / float(mem_U), 2) ) + "%"
                     
-                    DISK_TOTAL = str( get_output("fdisk -l | grep -i 'disk /dev' | awk '{sum+=$5} END {print sum}'")[-1].split("\n")[-1] )
-                    DISK_USED = str(get_output("df -B1 | grep -v ^Filesystem | awk '{sum += $3} END {print sum}'")[-1].split("\n")[-1] )
-                    DISK_PER = get_output("echo '"+DISK_USED+" "+DISK_TOTAL+" ' | awk '{printf \"%.1f\",$1/$2*100}'")[-1]
+                    DISK_TOTAL = str( get_output("fdisk -l | grep -i 'disk /dev'\
+                         | awk '{sum+=$5} END {print sum}'")[-1].split("\n")[-1] )
 
-                    clientSock.send( "%s,%s,%s,%s"%(KERNEL,CPU,RAM,DISK_PER) )
+                    DISK_USED = str(get_output("df -B1 | grep -v ^Filesystem \
+                        | awk '{sum += $3} END {print sum}'")[-1].split("\n")[-1] )
+
+                    DISK_PER = get_output("echo '"+DISK_USED+" "+DISK_TOTAL+" ' \
+                        | awk '{printf \"%.1f\",$1/$2*100}'")[-1]
+
+                    clientSock.send( f"{KERNEL},{RAM},{CPU},{DISK_PER}" )
                 
                 elif "get_usage" in command:
-                    CPU = get_output("echo -e $(top -n 1 -b | grep -i cpu\(s\) | awk '{print $2+$4+$6+$10+$12+$14+$16}') ")[-1]
+                    CPU = get_output("echo -e $(top -n 1 -b | grep -i cpu\(s\) |\
+                         awk '{print $2+$4+$6+$10+$12+$14+$16}') ")[-1]
 
                     
                     mem = str(os.popen('free -t -m').readlines())
@@ -154,14 +162,22 @@ else:
                     RAM_PER = "%.1f"%(float(RAM_USED) / float(RAM_TOTAL) * 100)
                     
                     
-                    DISK_TOTAL = str( get_output("fdisk -l | grep -i 'disk /dev' | awk '{sum+=$5} END {print sum}'")[-1].split("\n")[-1] )
-                    DISK_USED = str(get_output("df -B1 | grep -v ^Filesystem | awk '{sum += $3} END {print sum}'")[-1].split("\n")[-1] )
-                    DISK_PER = get_output("echo '"+DISK_USED+" "+DISK_TOTAL+" ' | awk '{printf \"%.1f\",$1/$2*100}'")[-1]
+                    DISK_TOTAL = str( get_output("fdisk -l | grep -i 'disk /dev' \
+                        | awk '{sum+=$5} END {print sum}'")[-1].split("\n")[-1] )
 
-                    DISK_TOTAL=get_output("echo "+DISK_TOTAL+" | awk '{printf \"%.1f\",($1/1024/1024/1024)}'")[-1]
-                    DISK_USED=get_output("echo "+DISK_USED+" | awk '{printf \"%.1f\",($1/1024/1024/1024)}'")[-1]
+                    DISK_USED = str(get_output("df -B1 | grep -v ^Filesystem \
+                        | awk '{sum += $3} END {print sum}'")[-1].split("\n")[-1] )
 
-                    clientSock.send( "%s,%s:%s:%s,%s:%s:%s"%(CPU,RAM_USED,RAM_TOTAL,RAM_PER,DISK_USED,DISK_TOTAL,DISK_PER) )
+                    DISK_PER = get_output("echo '"+DISK_USED+" "+DISK_TOTAL+" ' \
+                        | awk '{printf \"%.1f\",$1/$2*100}'")[-1]
+
+                    DISK_TOTAL=get_output("echo "+DISK_TOTAL+" \
+                        | awk '{printf \"%.1f\",($1/1024/1024/1024)}'")[-1]
+
+                    DISK_USED=get_output("echo "+DISK_USED+" \
+                        | awk '{printf \"%.1f\",($1/1024/1024/1024)}'")[-1]
+
+                    clientSock.send(f"{CPU},{RAM_USED}:{RAM_TOTAL}:{RAM_PER},{DISK_USED}:{DISK_TOTAL}:{DISK_PER}")
 
                 elif "get_detail" in command:
                     idx = len(platform.system())+len(platform.release())+1
@@ -172,12 +188,10 @@ else:
                 
                     CPU = get_output("grep -i 'model name' /proc/cpuinfo | sort -u | awk -F':' '{print $2}'")[-1].strip()
                     
-                    # RAM = get_output("echo $(dmidecode -t 17 | grep -i 'size' | grep -vi 'no' | awk '{sum += $2} END {print sum}')")[-1]
-                    # RAM = str(int(RAM)/1024)+"GB"
                     RAM = get_output("free -ht | grep -i mem | awk '{print $2}'")[-1]
                     
                     STO = get_output("echo $(fdisk -l | grep -i 'disk /dev' | awk '{sum+=$5} END {print sum}')")[-1]
-                    STO = "%sGB"%str(int(STO.split("\n")[-1])/1024/1024/1024)
+                    STO = f"{int(STO.split('\n')[-1])/1024/1024/1024}GB"
                     
                     try :
                         mysql_log = get_output("grep 'Version: ' /var/log/mysqld.log")[-1]
@@ -189,7 +203,8 @@ else:
                         mysql_ver = mysql_log[mysql_log.index("Version:")+1]
 
                         ### port ###
-                        mysql_port = get_output("grep 'port=' /etc/my.cnf | awk -F'=' '{print $NF}'")[-1]
+                        mysql_port = get_output("grep 'port=' /etc/my.cnf \
+                            | awk -F'=' '{print $NF}'")[-1]
                         if len(mysql_port) == 0 :
                             mysql_port="3306"
 
@@ -197,7 +212,8 @@ else:
                         active_check = get_output("systemctl is-active mysqld")[-1]
 
                         ### initial passwd ###
-                        initial_passwd = get_output("grep 'temporary password' /var/log/mysqld.log")[-1]
+                        initial_passwd = get_output("grep 'temporary password' \
+                            /var/log/mysqld.log")[-1]
                         initial_passwd = initial_passwd.split()
                         initial_passwd = initial_passwd[len(initial_passwd)-1]
 
@@ -212,10 +228,9 @@ else:
                         mysql_port = "Not installed"
                         active_check = "Not installed"
 
-                    # MYSQL = "'{0}\n{1}\n{2}\n{3}'".format(initial_passwd, mysql_ver, mysql_port, active_check)
-                    MYSQL = "{0}:{1}:{2}".format(mysql_ver, mysql_port, active_check)
+                    MYSQL = f"{mysql_ver}:{mysql_port}:{active_check}"
                     
-                    result = "%s,%s,%s,%s,%s,%s,%s"%(OS, KER, ARCH, CPU, RAM, STO, MYSQL)
+                    result = f"{OS},{KER},{ARCH},{CPU},{RAM},{STO},{MYSQL}"
                     
                     clientSock.send( result.encode() )
 
@@ -224,52 +239,70 @@ else:
                         idx = command.index(":")+1
                         mysql_pw = command[idx:]
                         
-                        temp = "echo -e $(mysql -uroot -p'"+mysql_pw+"' mysql -e \"SHOW VARIABLES LIKE 'validate_password%';\")"
+                        temp = f"""echo -e $(mysql -uroot -p'{mysql_pw}' mysql \
+                            -e "SHOW VARIABLES LIKE 'validate_password%';")"""
                         
-                        content = get_output("echo -e $(mysql -uroot -p"+mysql_pw+" mysql -e \"SHOW VARIABLES LIKE 'validate_password%';\")")[-1]
+                        content = get_output(f"""echo -e $(mysql -uroot \
+                            -p{mysql_pw} mysql -e "SHOW VARIABLES \
+                            LIKE 'validate_password%';")""")[-1]
                         content = content.split("\n")[1]
                         content = content.split(" ")[2:]
                         
                         # print("\nplz TTTT\n", content)
                         # os.system("wall plz TTTT %s"%content)
                         
-                        content = ";".join( [content[1], "", content[4], content[6], content[8], content[10], content[12]] )
+                        content = ";".join( [
+                            content[1],
+                            "",
+                            content[4],
+                            content[6],
+                            content[8],
+                            content[10],
+                            content[12]
+                        ] )
                     
                     except IndexError as e:
                         _, _, tb = sys.exc_info()
-                        os.system("wall Error file_name!!!!%s"%__file__)
-                        os.system("wall Error line No!!!!%s"%tb.tb_lineno)
-                        os.system("wall Error!!!!%s"%e)
-                        content = "Not installed;;Not installed;Not installed;Not installed;Not installed;Not installed"
+                        os.system(f"wall Error file_name!!!!{__file__}")
+                        os.system(f"wall Error line No!!!!{tb.tb_lineno}")
+                        os.system(f"wall Error!!!!{e}")
+                        content = "Not installed;;Not installed;Not installed;\
+                            Not installed;Not installed;Not installed"
                     
                     clientSock.send( content.encode() )
                     
                 elif "security_check" in command:
-                    os.system("/root/M_M/security_list.sh %s"%sys.argv[3])
+                    os.system(f"/root/M_M/security_list.sh {sys.argv[3]}")
                     os.system("wall finish")
                     
                     clientSock.send("check_finish")
                 
                 elif "linux_info:" in command:
-                    os.system("wall Command is %s"%command)
+                    os.system(f"wall Command is {command}")
                     work = command.split(":")[1]
                     
                     if "last.sh" in work:
-                        result = get_output("echo -e $(last -10 | grep -wvP 'wtmp|^$' | tr  '\n' '\!' | tr -s ' ' ',')")[-1]
+                        result = get_output("echo -e $(last -10 | grep -wvP \
+                            'wtmp|^$' | tr  '\n' '\!' | tr -s ' ' ',')")[-1]
                         
                     elif "lastb.sh" in work:
-                        result = get_output("echo -e $(lastb -10 | grep -wvP 'btmp|^$' | tr  '\n' '\!' | tr -s ' ' ',')")[-1]
+                        result = get_output("echo -e $(lastb -10 | grep -wvP \
+                            'btmp|^$' | tr  '\n' '\!' | tr -s ' ' ',')")[-1]
                     
                     elif "ip_ban_list.sh" in work:
-                        result = get_output("echo -e $(firewall-cmd --list-rich-rules |\
-                        awk -F'\"' '{print $4}' | tr '\n' ' ')$(grep -vP '#|^$' /etc/hosts.deny | awk -F':' '{print $NF}')")[-1]
+                        result = get_output("echo -e $(firewall-cmd \
+                            --list-rich-rules | awk -F'\"' '{print $4}' \
+                            | tr '\n' ' ')$(grep -vP '#|^$' \
+                            /etc/hosts.deny | awk -F':' '{print $NF}')")[-1]
                     
                     elif "user_list.sh" in work:
-                        result = get_output("echo -e $(awk -F':' '{print $1}' /etc/passwd | tr '\n' ',')")[-1]
+                        result = get_output("echo -e $(awk -F':' '{print $1}' \
+                            /etc/passwd | tr '\n' ',')")[-1]
                     
                     elif "mysql_backup_list.sh" in work:
                         if os.path.isdir("/etc/mysql_back.d"):
-                            result = get_output("ls /etc/mysql_back.d | tr '\n' ','")[-1]
+                            result = get_output("ls /etc/mysql_back.d \
+                                | tr '\n' ','")[-1]
                             
                         else:
                             result = "no"
@@ -277,15 +310,15 @@ else:
                     if result == "":
                         result = "1"
                         
-                    clientSock.send("linux_info;"+result)
+                    clientSock.send(f"linux_info;{result}")
                     
                 else:
-                    os.system("wall run this command: %s"%command)
+                    os.system(f"wall run this command: {command}")
                     os.system(command)
                     
             except Exception as e:
                 _, _, tb = sys.exc_info()
-                os.system("wall Error file_name!!!!%s"%__file__)
-                os.system("wall Error line No!!!!%s"%tb.tb_lineno)
-                os.system("wall Error!!!!%s"%e)
-                os.system("echo -e %s > /root/M_M/m_m_socket_error.txt"%e)
+                os.system(f"wall Error file_name!!!!{__file__}")
+                os.system(f"wall Error line No!!!!%s"%tb.tb_lineno)
+                os.system(f"wall Error!!!!{e}")
+                os.system(f"echo -e {e} > /root/M_M/m_m_socket_error.txt")

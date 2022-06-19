@@ -1740,4 +1740,4 @@ def run_flask_server():
     
     
     context = ('./cert/server.crt', './cert/server.key')
-    socketio.run(app_flask, host = "0.0.0.0", debug = True, ssl_context=context)
+    socketio.run(app_flask, host = "localhost", debug = True, ssl_context=context)

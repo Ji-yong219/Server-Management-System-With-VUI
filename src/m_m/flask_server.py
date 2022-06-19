@@ -4,7 +4,7 @@
 # 프로젝트 이름 : 다중 서버 관리 웹사이트
 # 프로젝트 기능 : 음성 인식을 사용하여 다중의 Centos7 서버를 관리해주는 Flask 웹 서버
 # 최초 제작 날짜 : 2019-09-02
-# 최종 수정 날짜 : 2020-11-05
+# 최종 수정 날짜 : 2022-06-18
 
 
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
@@ -85,8 +85,8 @@ def id_exist(user_id):
         try:
             with db.cursor() as cursor:
                 id_result = 0
-                cursor.execute(f"SELECT EXISTS(\
-                    select id from users where id="{user_id}") as success")
+                cursor.execute(f"""SELECT EXISTS(\
+                    select id from users where id="{user_id}") as success""")
                 id_result = cursor.fetchone()[0]
         finally:
             pass
@@ -206,7 +206,7 @@ def get_servers(user_id):
 
 
 def get_data_from_socket(ip, port, id, pw, work, socket_port_idx):
-    command = ['curl', '-s', '-m', '1', ip+':'+port]
+    command = ['curl', '-s', '-m', '1', f"{ip}:{port}"]
     sp_stream = subprocess.Popen(command, stdout=subprocess.PIPE).stdout
     result = sp_stream.read().strip().decode('utf-8')
     sp_stream.close()
@@ -222,16 +222,16 @@ def get_data_from_socket(ip, port, id, pw, work, socket_port_idx):
             serverSock.listen(1)
         
             if work.split(".")[1] == "py":
-                command = f"plink {ip} -l {id} -pw {pw} -P {port} -batch %s"\
+                command = f"plink {ip} -l {id} -pw {pw} -P {port} -batch "\
                         + f"python ./M_M/{work} {socket_port}"
                 
             elif work.split("@policy@")[0] == "mysql_policy_output.sh":
                 mysql_pw = work.split("@policy@")[1].replace("'", "+@+@+")
-                command = f"plink {ip} -l {id} -pw {pw} -P {port} -batch %s"\
+                command = f"plink {ip} -l {id} -pw {pw} -P {port} -batch "\
                 + f"./M_M/{work.split('@policy@')[0]} {socket_port} '{mysql_pw}'"
                 
             else:
-                command = f"plink {ip} -l {id} -pw {pw} -P {port} -batch %s"\
+                command = f"plink {ip} -l {id} -pw {pw} -P {port} -batch "\
                 + f"./M_M/{work} {socket_port}"
             
             result = os.system(command)
@@ -263,10 +263,9 @@ def check_linux_connection():
     if user_id:
         server_list = [i.split(":")[1] for i in get_servers(user_id).split(",")]
         
-        # print("\n\n서버리스트:", server_list)
-        # print("커넥션리스트:", linux_connection.keys())
-        
-        connection_list = ",".join( list( set(server_list) & set(linux_connection.keys()) ) )
+        connection_list = ",".join(
+            list( set(server_list) & set(linux_connection.keys()) )
+        )
         
         socketio.emit('linux_connect', connection_list, namespace='/socket')
     
@@ -407,8 +406,6 @@ def checking_login ():
         error_str += f"\n{e}"
 
         return render_template("error.html", error = str(error_str))
-    
-    return "<script>alert('잘못된 입력입니다.');window.location.replace('/')</script>" + render_template("index.html")
 
 
 # 로그아웃버튼 눌렀을 시 session에서 해당 아이디 없애서 로그아웃하는 라우트
@@ -439,7 +436,6 @@ def checking_regist ():
                     "id,pw,name,q_a,join_date",
                     f'"{user_id}","{user_pw}","{user_name}","DBLAB","now()"'
                 )
-                # ",".join(['"'+user_id+'"', '"'+user_pw+'"', '"'+user_name+'"', '"DBLAB"', "now()"]))
             
                 session['user_id'] = user_id
                 
@@ -739,11 +735,32 @@ def modify_server():
         
         where = f"where id='{server_idx}'"
         
-        columns = "name,ip,port,OS,kernel,arch,processor,ram,storage,mysql_ver\
-            ,mysql_port,mysql_pw_policy_chk_name,mysql_pw_policy_dic_file\
-            ,mysql_pw_policy_length,mysql_pw_policy_mix_count\
-            ,mysql_pw_policy_num_count,mysql_pw_policy_type\
-            ,mysql_pw_policy_special_count"
+        # columns = "name,ip,port,OS,kernel,arch,processor,ram,storage,mysql_ver\
+        #     ,mysql_port,mysql_pw_policy_chk_name,mysql_pw_policy_dic_file\
+        #     ,mysql_pw_policy_length,mysql_pw_policy_mix_count\
+        #     ,mysql_pw_policy_num_count,mysql_pw_policy_type\
+        #     ,mysql_pw_policy_special_count"
+        
+        columns = ",".join([
+                "name",
+                "ip",
+                "port",
+                "OS",
+                "kernel",
+                "arch",
+                "processor",
+                "ram",
+                "storage",
+                "mysql_ver",
+                "mysql_port",
+                "mysql_pw_policy_chk_name",
+                "mysql_pw_policy_dic_file",
+                "mysql_pw_policy_length",
+                "mysql_pw_policy_mix_count",
+                "mysql_pw_policy_num_count",
+                "mysql_pw_policy_type",
+                "mysql_pw_policy_special_count"
+            ])
         
         values = [
             name, ip, port, os, kernel, arch, pro, ram, sto, ms_ver,
@@ -812,12 +829,31 @@ def go_monitoring_page ():
             target_server = request.form["select_server"]
             
             try:
-                server_info = get_data_from_db("id,name,ip,port,OS,kernel,arch,\
-                    processor,ram,storage,mysql_ver,mysql_port,mysql_reset_pw,\
-                    mysql_pw_policy_chk_name,mysql_pw_policy_length,\
-                    mysql_pw_policy_mix_count,mysql_pw_policy_num_count,\
-                    mysql_pw_policy_type,mysql_pw_policy_special_count",
-                    "servers", f"where id = {target_server}")[0]
+                server_info = get_data_from_db(
+                    ",".join([
+                        "id",
+                        "name",
+                        "ip",
+                        "port",
+                        "OS",
+                        "kernel",
+                        "arch",
+                        "processor",
+                        "ram",
+                        "storage",
+                        "mysql_ver",
+                        "mysql_port",
+                        "mysql_reset_pw",
+                        "mysql_pw_policy_chk_name",
+                        "mysql_pw_policy_length",
+                        "mysql_pw_policy_mix_count",
+                        "mysql_pw_policy_num_count",
+                        "mysql_pw_policy_type",
+                        "mysql_pw_policy_special_count",
+                    ]),
+                    "servers",
+                    f"where id = {target_server}"
+                )[0]
                 server_name = str(server_info[1])
                 server_ip = str(server_info[2])
                 server_port = str(server_info[3])
@@ -887,12 +923,31 @@ def go_detail_page ():
             target_server = request.args.get("select_server")
             
             try:
-                server_info = get_data_from_db("id,name,ip,port,OS,kernel,arch,\
-                    processor,ram,storage,mysql_ver,mysql_port,mysql_reset_pw,\
-                    mysql_pw_policy_chk_name,mysql_pw_policy_length,\
-                    mysql_pw_policy_mix_count,mysql_pw_policy_num_count,\
-                    mysql_pw_policy_type,mysql_pw_policy_special_count",
-                    "servers", f"where id = {target_server}")[0]
+                server_info = get_data_from_db(
+                    ",".join([
+                        "id",
+                        "name",
+                        "ip",
+                        "port",
+                        "OS",
+                        "kernel",
+                        "arch",
+                        "processor",
+                        "ram",
+                        "storage",
+                        "mysql_ver",
+                        "mysql_port",
+                        "mysql_reset_pw",
+                        "mysql_pw_policy_chk_name",
+                        "mysql_pw_policy_length",
+                        "mysql_pw_policy_mix_count",
+                        "mysql_pw_policy_num_count",
+                        "mysql_pw_policy_type",
+                        "mysql_pw_policy_special_count"
+                    ]),
+                    "servers",
+                    f"where id = {target_server}"
+                )[0]
                 server_name = str(server_info[1])
                 server_ip = str(server_info[2])
                 server_port = str(server_info[3])
@@ -1031,7 +1086,7 @@ def send_command(data):
                 f"""'{now_datetime.strftime("%Y-%m-%d %H:%M:%S")}'"""
             ]
             target_values.extend([i, good, warning, danger])
-            target_values.append("'" + log_file_name + "'")
+            target_values.append(f"'{log_file_name}'")
             target_values = ",".join(target_values)
             insert_data_in_db("server_check", target_keys, target_values)
             
@@ -1604,7 +1659,7 @@ class TcpHandler(socketserver.StreamRequestHandler):
     # 클라이언트 주소는 self.client_address로 제공됨.
     # 서버 인스턴스는 self.server로 제공됨.
     def handle(self): # 클라이언트가 접속시 클라이언트 주소 출력
-        print('리눅스 클라이언트 [%s] 연결됨' %self.client_address[0])
+        print(f'리눅스 클라이언트 [{self.client_address[0]}] 연결됨')
         
         server_user_id = None
         server_idx = None
@@ -1639,7 +1694,7 @@ class TcpHandler(socketserver.StreamRequestHandler):
             else:
                 linux_connection[server_idx][1] = msg.decode()
 
-        print('[%s] 접속종료' %self.client_address[0])
+        print(f'[{self.client_address[0]}] 접속종료')
         socketio.emit('linux_disconnect', server_idx, namespace='/socket')
         
         if server_idx in linux_connection.keys():

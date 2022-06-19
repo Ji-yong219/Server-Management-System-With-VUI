@@ -9,7 +9,6 @@ list_changed = []
 def get_NJP(text):
     type_ = 'None'
     with open("./src/m_m/ttc.csv", "r") as f:
-    # with open("ttc.csv", "r") as f:
         p = f.read()
         
     check_P = [(i.split(";")[0], i.split(";")[1]) for i in p.split("\n")]
@@ -31,7 +30,6 @@ def get_NJP(text):
 
 def distortion(sentence):
     with open("./src/m_m/distortion.csv", "r") as f:
-    # with open("distortion.csv", "r") as f:
         word = f.read()
     
     distort = [(i.split(";")[0], i.split(";")[1]) for i in word.split("\n")]
@@ -44,7 +42,6 @@ def distortion(sentence):
     
 def verb_change(sentence):
     with open("./src/m_m/dic.csv", "r") as f:
-    # with open("dic.csv", "r") as f:
         verb = f.read()
 
     ch_verb = [(i.split(";")[0], i.split(";")[1]) for i in verb.split("\n")]
@@ -73,12 +70,11 @@ def window(sentence):
 
 def matching(n_list):
     with open("./src/m_m/similar.csv", "r") as f:
-    # with open("similar.csv", "r") as f:
         similar = f.read()
     
     similar_list = similar.split('\n')
-    print(similar_list)
-    print(n_list)
+    # print(similar_list)
+    # print(n_list)
     for i in range(len(n_list)):
         if len(get_close_matches(n_list[i], similar_list)) != 0:
             n_list[i] = get_close_matches(n_list[i], similar_list)[0]
@@ -98,7 +94,11 @@ def extract_target(sentence,server_list):
                     index_w.append(j)
             target = i[1]
             break            
-        elif i[0].replace(' ', '').translate(str.maketrans('123456789','일이삼사오육칠팔구')) in sentence.replace(' ', ''):
+
+        elif i[0].replace(' ', '').translate(
+                    str.maketrans('123456789','일이삼사오육칠팔구')
+                ) in sentence.replace(' ', ''):
+            
             for j in range(len(sentence)):
                 if i[0][0] == sentence[j]:
                     index_w.append(j)
@@ -127,8 +127,10 @@ def convert_command(sentence, server_list):
     server_info = []
     
     for i in range(len(server_list)):
-        server_info.append([server_list[i].split(':')[0],server_list[i].split(':')[1]])
-        # server_list[i] = server_list[i].split(':')[0]
+        server_info.append([
+            server_list[i].split(':')[0],
+            server_list[i].split(':')[1]
+        ])
         
     sentence = distortion(sentence)
     sentence = verb_change(sentence)
@@ -140,10 +142,8 @@ def convert_command(sentence, server_list):
 
     if len(action1) > 0:
         return {'window':win, 'type':type_,'target':target, 'action':action1}
+
     else:
-        # for i in list_changed:
-            # action2 = i[0]
-            # print(i)
         if win != 'last' and action2 == 'None':
             action2 = '창'
         return {'window':win, 'type':type_,'target':target, 'action':action2}

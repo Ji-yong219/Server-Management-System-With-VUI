@@ -1700,13 +1700,8 @@ class TcpHandler(socketserver.StreamRequestHandler):
         if server_idx in linux_connection.keys():
             del linux_connection[server_idx]
 
-# class ListenerServer(socketserver.ThreadingTCPServer):
-class ListenerServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-    def __init__(self, host_port_tuple, streamhandler, Controllers):
-        super().__init__(host_port_tuple, streamhandler)
-        self.linux_connect_dict = Controllers
-    pass
 
+from SocketListenerServer import ListenerServer
 
 def runListenerServer():
     global linux_connection
